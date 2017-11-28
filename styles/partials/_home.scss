@@ -1,0 +1,23 @@
+.home {
+    background-image: url('//cms.union.rpi.edu/static/img/RPIStudentUnion.jpg');
+
+    .login-panel {
+        margin-top: 30vh;
+        width: 500px;
+        float: none;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+
+        h4 {
+            margin: 1rem 0;
+        }
+
+        .btn.btn-login {
+            height: 60px;
+            font-size: 1.65em;
+            font-weight: 700;
+            margin-bottom: 2rem;
+        }
+    }
+}

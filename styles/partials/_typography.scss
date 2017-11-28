@@ -1,0 +1,28 @@
+a {
+    color: #c40000;
+
+    &:hover {
+        color: darken(#c40000, 10%);
+    }
+}
+
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:hover, {
+    background-color: #c40000;
+}
+
+.action {
+    p, ul, ol {
+        font-family: 'Palatino', serif;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    ol {
+        li {
+            ol {
+                list-style-type: lower-alpha;
+            }
+        }
+    }
+}

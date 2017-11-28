@@ -1,0 +1,77 @@
+@import "../assets/sass/lbd/variables";
+@import "../assets/sass/lbd/mixins";
+
+@import "../assets/sass/lbd/typography";
+
+// Core CSS
+@import "../assets/sass/lbd/misc";
+@import "../assets/sass/lbd/sidebar-and-main-panel";
+@import "../assets/sass/lbd/buttons";
+@import "../assets/sass/lbd/inputs";
+
+@import "../assets/sass/lbd/alerts";
+@import "../assets/sass/lbd/tables";
+
+@import "../assets/sass/lbd/checkbox-radio-switch";
+@import "../assets/sass/lbd/navbars";
+@import "../assets/sass/lbd/footers";
+
+// Fancy Stuff
+
+@import "../assets/sass/lbd/dropdown";
+@import "../assets/sass/lbd/cards";
+@import "../assets/sass/lbd/chartist";
+@import "../assets/sass/lbd/responsive";
+
+@import "partials/home";
+@import "partials/typography";
+@import "partials/sidebar";
+
+.content.content-even {
+    padding: 15px;
+}
+
+.card {
+    .breadcrumb {
+        //background-color: transparent;
+        margin-bottom: 0;
+    }
+}
+
+.btn-borderless {
+    border: 0;
+}
+
+.md-editor {
+    &.md-fullscreen-mode {
+        .md-preview {
+            p, ol {
+                font-size: 20px;
+            }
+        }
+    }
+
+    .md-preview {
+        p, ol {
+            font-family: 'Palatino', serif;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        ol {
+            li {
+                ol {
+                    list-style-type: lower-alpha;
+                }
+            }
+        }
+    }
+}
+
+.text-success-readable {
+    color: #3c763d !important;
+}
+
+.text-danger-readable {
+    color: #a94442 !important;
+}
