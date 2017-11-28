@@ -20,7 +20,7 @@
 <div class="sidebar" data-color="red">
     <div class="sidebar-wrapper">
         <div class="logo">
-            <a href="http://www.creative-tim.com" class="simple-text">
+            <a href="/dashboard.php" class="simple-text">
                 SG Management Tool
             </a>
         </div>
