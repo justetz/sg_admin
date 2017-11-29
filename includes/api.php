@@ -23,23 +23,19 @@ abstract class APIModel {
         return isset($parameters) ? ('?' . http_build_query($parameters)) : '';
     }
 
-//    protected static function get_http_response_code($url) {
-//        $headers = get_headers($url);
-//        return substr($headers[0], 9, 3);
-//    }
-
     protected static function executeAPIGet($query) {
         $ch = curl_init(static::getUrl($query));
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,true);
-        curl_setopt($ch,CURLOPT_CAINFO,'/cacert.pem');
 
         try {
             $result = curl_exec($ch);
             if(!$result) {
-                echo "<script type='text/javascript'>console.log('Error: " . curl_error($ch) . " - Code: " . curl_errno($ch) . "');</script>";
-                return false;
+                return [
+                    "message" => "Not Found",
+                    "errors" => [],
+                ];
             } else {
                 return json_decode($result, true);
             }
@@ -47,14 +43,6 @@ abstract class APIModel {
             error_log("API GET failed for " . static::getUrl($query) . ": $e");
             return false;
         }
-//        if(static::get_http_response_code(static::getUrl($query)) == "404"){
-//            return [
-//                "message" => "Not Found",
-//                "errors" => [],
-//            ];
-//        } else {
-//
-//        }
     }
 
     protected static function executeAPICall($method, $data, $id = null) {
