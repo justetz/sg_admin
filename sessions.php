@@ -131,7 +131,7 @@ foreach($presidingOfficers as $o) {
                                             ?>
                                         </tbody>
                                     </table>
-                                    <? print_r($activeSessions) ?>
+                                    <?php print_r($activeSessions) ?>
                                 </div>
                             </div>
                         </div>
