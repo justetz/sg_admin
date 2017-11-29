@@ -36,7 +36,9 @@ abstract class APIModel {
         curl_setopt($ch,CURLOPT_CAINFO,'cacert.pem');
 
         try {
-            return json_decode(curl_exec($ch), true);
+            $result = curl_exec($ch);
+            echo "<script type='text/javascript'>console.log('" . static::getUrl($query) . "', $result);</script>";
+            return json_decode($result, true);
         } catch (Exception $e) {
             error_log("API GET failed for " . static::getUrl($query) . ": $e");
             return false;
