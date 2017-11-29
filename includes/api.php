@@ -33,7 +33,7 @@ abstract class APIModel {
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,true);
-        curl_setopt($ch,CURLOPT_CAINFO,'cacert.pem');
+        curl_setopt($ch,CURLOPT_CAINFO,'/cacert.pem');
 
         try {
             $result = curl_exec($ch);
