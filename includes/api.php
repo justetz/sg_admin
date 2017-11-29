@@ -38,6 +38,7 @@ abstract class APIModel {
         try {
             return json_decode(curl_exec($ch), true);
         } catch (Exception $e) {
+            error_log("API GET failed for " . static::getUrl($query) . ": $e");
             return false;
         }
 //        if(static::get_http_response_code(static::getUrl($query)) == "404"){
