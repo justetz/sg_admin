@@ -23,20 +23,31 @@ abstract class APIModel {
         return isset($parameters) ? ('?' . http_build_query($parameters)) : '';
     }
 
-    protected static function get_http_response_code($url) {
-        $headers = get_headers($url);
-        return substr($headers[0], 9, 3);
-    }
+//    protected static function get_http_response_code($url) {
+//        $headers = get_headers($url);
+//        return substr($headers[0], 9, 3);
+//    }
 
     protected static function executeAPIGet($query) {
-        if(static::get_http_response_code(static::getUrl($query)) == "404"){
-            return [
-                "message" => "Not Found",
-                "errors" => [],
-            ];
-        } else {
-            return json_decode(file_get_contents(static::getUrl($query)), true);
+        $ch = curl_init(static::getUrl($query));
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,true);
+        curl_setopt($ch,CURLOPT_CAINFO,'cacert.pem');
+
+        try {
+            return json_decode(curl_exec($ch), true);
+        } catch (Exception $e) {
+            return false;
         }
+//        if(static::get_http_response_code(static::getUrl($query)) == "404"){
+//            return [
+//                "message" => "Not Found",
+//                "errors" => [],
+//            ];
+//        } else {
+//
+//        }
     }
 
     protected static function executeAPICall($method, $data, $id = null) {

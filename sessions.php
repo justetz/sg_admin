@@ -25,8 +25,11 @@ function urlToggleExpand ($uniqueId) {
     return "/sessions.php" . (count($newGet) ? ("?" . http_build_query($newGet)) : '');
 }
 
-$activeSessions = json_decode(file_get_contents($API_BASE . "api/sessions?active=true"), true);
-$bodies = json_decode(file_get_contents($API_BASE . "api/bodies"), true);
+$activeSessions = Sessions::read([
+    "active" => "true"
+]);
+
+$bodies = Bodies::read();
 
 $presidingOfficerIds = [];
 foreach($bodies as $b) {
@@ -35,7 +38,9 @@ foreach($bodies as $b) {
     }
 }
 
-$presidingOfficers = json_decode(file_get_contents($API_BASE . "api/memberships?positionId=" . json_encode($presidingOfficerIds)), true);
+$presidingOfficers = Memberships::read([
+    "positionId" => json_encode($presidingOfficerIds)
+]);
 
 $presidingOfficerMap = [];
 foreach($presidingOfficers as $o) {
@@ -68,7 +73,6 @@ foreach($presidingOfficers as $o) {
                             <div class="card">
                                 <div class="header">
                                     <h4 class="title">Active Sessions &amp; Sub-Bodies</h4>
-                                    <p class="category">Here is a subtitle for this table</p>
                                 </div>
                                 <div class="content table-responsive table-full-width">
                                     <table class="table table-hover table-striped">
@@ -135,7 +139,6 @@ foreach($presidingOfficers as $o) {
                             <div class="card">
                                 <div class="header">
                                     <h4 class="title">Student Government Bodies</h4>
-                                    <p class="category">Here is a subtitle for this table</p>
                                 </div>
                                 <div class="content table-responsive table-full-width">
                                     <table class="table table-hover table-striped">

@@ -56,7 +56,7 @@ $pageTitle = "Manage Person: $person[name]";
                                 <div class="content table-responsive table-full-width">
                                     <table class="table table-hover table-striped">
                                         <thead>
-                                            <th>Title</th>
+                                            <th>Membership Title</th>
                                             <th>Position</th>
                                             <th>Current</th>
                                             <th>Session</th>
