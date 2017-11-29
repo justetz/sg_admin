@@ -37,8 +37,12 @@ abstract class APIModel {
 
         try {
             $result = curl_exec($ch);
-            echo "<script type='text/javascript'>console.log('" . static::getUrl($query) . "', $result);</script>";
-            return json_decode($result, true);
+            if(!$result) {
+                echo "<script type='text/javascript'>console.log('Error: " . curl_error($ch) . " - Code: " . curl_errno($ch) . "');</script>";
+                return false;
+            } else {
+                return json_decode($result, true);
+            }
         } catch (Exception $e) {
             error_log("API GET failed for " . static::getUrl($query) . ": $e");
             return false;
