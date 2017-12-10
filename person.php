@@ -77,29 +77,31 @@ $pageTitle = "Manage Person: $person[name]";
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-8">
-                            <div class="card">
-                                <div class="content content-even">
-                                    <ol class="breadcrumb">
-                                        <li><a href="people.php">People & Memberships</a></li>
-                                        <li class="active"><?=$person['name']?></li>
-                                    </ol>
+                            <?php if (IS_AUTHORIZED) { ?>
+                                <div class="card">
+                                    <div class="content content-even">
+                                        <ol class="breadcrumb">
+                                            <li><a href="people.php">People & Memberships</a></li>
+                                            <li class="active"><?=$person['name']?></li>
+                                        </ol>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="card">
-                                <div class="content content-even">
-                                    <ul class="nav nav-pills">
-                                        <li role="presentation" <?=(!isset($_GET['section']) || $_GET['section'] == 'profile') ? 'class="active"' : ''?>>
-                                            <a href="<?=toggleGetParam('section','profile')?>">Profile</a>
-                                        </li>
-                                        <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'memberships') ? 'class="active"' : ''?>>
-                                            <a href="<?=toggleGetParam('section','memberships')?>">Memberships</a>
-                                        </li>
-                                        <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'actions') ? 'class="active"' : ''?>>
-                                            <a href="<?=toggleGetParam('section','actions')?>">Actions</a>
-                                        </li>
-                                    </ul>
+                                <div class="card">
+                                    <div class="content content-even">
+                                        <ul class="nav nav-pills">
+                                            <li role="presentation" <?=(!isset($_GET['section']) || $_GET['section'] == 'profile') ? 'class="active"' : ''?>>
+                                                <a href="<?=toggleGetParam('section','profile')?>">Profile</a>
+                                            </li>
+                                            <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'memberships') ? 'class="active"' : ''?>>
+                                                <a href="<?=toggleGetParam('section','memberships')?>">Memberships</a>
+                                            </li>
+                                            <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'actions') ? 'class="active"' : ''?>>
+                                                <a href="<?=toggleGetParam('section','actions')?>">Actions</a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
-                            </div>
+                            <?php } ?>
                             <?php if(!isset($_GET['section']) || $_GET['section'] == 'profile') { ?>
                                 <div class="card">
                                     <div class="header">
