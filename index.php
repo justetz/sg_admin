@@ -2,7 +2,7 @@
 require_once 'includes/auth.php';
 
 if (phpCAS::isAuthenticated()) {
-    header('location: ./dashboard.php');
+    header('location: ./person.php?rcsId=' . strtolower(phpCAS::getUser()));
     exit;
 }
 

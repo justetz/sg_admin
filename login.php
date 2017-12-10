@@ -6,7 +6,7 @@ require_once 'includes/cms.php';
 if (!phpCAS::isAuthenticated()) {
     phpCAS::forceAuthentication();
 } else {
-    header('location: ./dashboard.php');
+    header('location: ./person.php?rcsId=' . strtolower(phpCAS::getUser()));
 }
 
 ?>

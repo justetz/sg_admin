@@ -9,8 +9,54 @@ if (!phpCAS::isAuthenticated()) {
 }
 
 $pageTitle = "Meetings &amp; Events";
+$result = false;
 
-if(isset($_GET['bodyUniqueId']) && isset($_GET['sessionUniqueId'])) {
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
+    $data = $_POST;
+    $transaction = $data['transaction'];
+    unset($data['transaction']);
+
+    if ($transaction == 'create_meeting') {
+        $uniqueIds = explode('/', $data['fullUniqueId'], 2);
+        unset($data['fullUniqueId']);
+
+        $meetings = Meetings::read([
+            'bodyUniqueId' => $uniqueIds[0],
+            'sessionUniqueId' => $uniqueIds[1],
+            'sort' => '-meetingNum,-date'
+        ]);
+
+        $newMeetingNum = -1;
+        for($i = 0; $i < count($meetings); $i++) {
+            if($meetings[$i]['date'] <= $data['date']) {
+                $newMeetingNum = $meetings[$i]['meetingNum'] + 1;
+                break;
+            }
+        }
+
+        if($newMeetingNum == -1) {
+            $newMeetingNum = 1;
+        }
+
+        $data['bodyUniqueId'] = $uniqueIds[0];
+        $data['sessionUniqueId'] = $uniqueIds[1];
+        $data['meetingNum'] = $newMeetingNum;
+
+        $result = Meetings::create($data);
+
+        if($i > 0) {
+            for($j = ($i - 1); $j >= 0; $j--) {
+                $meetings[$j]['meetingNum'] = $meetings[$j]['meetingNum'] + 1;
+
+                Meetings::update($meetings[$j]);
+            }
+        }
+    } else if($transaction == 'delete_meeting') {
+        Meetings::delete($data);
+    }
+}
+
+if (isset($_GET['bodyUniqueId']) && isset($_GET['sessionUniqueId'])) {
     $meetingParameters['bodyUniqueId'] = $_GET['bodyUniqueId'];
     $meetingParameters['sessionUniqueId'] = $_GET['sessionUniqueId'];
     $meetings = Meetings::read([

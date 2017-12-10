@@ -101,9 +101,6 @@ foreach($people as $person) {
                                         <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'past') ? 'class="active"' : ''?>>
                                             <a href="<?=toggleGetParam('section','past')?>">Past People</a>
                                         </li>
-                                        <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'positions') ? 'class="active"' : ''?>>
-                                            <a href="<?=toggleGetParam('section','positions')?>">Positions</a>
-                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -154,119 +151,10 @@ foreach($people as $person) {
                                         </table>
                                     </div>
                                 </div>
-                            <?php } else if(isset($_GET['section']) && $_GET['section'] == 'positions') { ?>
-                                <div class="card">
-                                    <div class="header">
-                                        <h4 class="title">Positions</h4>
-                                    </div>
-                                    <div class="content table-responsive table-full-width">
-                                        <table class="table table-hover table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Position</th>
-                                                    <th>Body</th>
-                                                    <th>Is Voting?</th>
-                                                    <th>Is Officer?</th>
-                                                    <th>Is Presiding Officer?</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php
-                                                $positions = Positions::read([
-                                                    "sort" => "name"
-                                                ]);
-
-                                                foreach($positions as $p) {
-                                                    echo "<tr>";
-                                                    echo "<td>$p[name]</td>";
-                                                    echo "<td>" . $p['body']['name'] . "</td>";
-                                                    echo "<td>" . ($p['voting'] ? "<span class='text-success-readable'>Yes</span>" : "<span class='text-danger-readable'>No</span>") . "</td>";
-                                                    echo "<td>" . ($p['officer'] ? "<span class='text-success-readable'>Yes</span>" : "<span class='text-danger-readable'>No</span>") . "</td>";
-                                                    echo "<td>" . ($p['presidingOfficer'] ? "<span class='text-success-readable'>Yes</span>" : "<span class='text-danger-readable'>No</span>") . "</td>";
-                                                    echo "<td><a href='/position.php?id=$p[id]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a></td>";
-                                                    echo "</tr>";
-                                                }
-                                                ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
                             <?php } ?>
                         </div>
                         <div class="col-md-4">
-
                             <?=generateAddMembershipCard('create_membership', null, null, null)?>
-<!--                            <div class="card">-->
-<!--                                <div class="header">-->
-<!--                                    <h4 class="title">Add Membership</h4>-->
-<!--                                </div>-->
-<!--                                <div class="content">-->
-<!--                                    <form>-->
-<!--                                        <div class="form-group">-->
-<!--                                            <label>RCS ID --><?//=$requiredIndicator?><!--</label>-->
-<!--                                            <input type="text" name="rcsId" class="form-control" placeholder="RCS ID">-->
-<!--                                        </div>-->
-<!--                                        <div class="form-group">-->
-<!--                                            <label>Position --><?//=$requiredIndicator?><!--</label>-->
-<!--                                            <select name="positionId" class="form-control">-->
-<!--                                                <option disabled selected>Select a position...</option>-->
-<!--                                                --><?php
-//                                                    $presidingOfficerOptions = "";
-//                                                    $officerOptions = "";
-//                                                    $votingOptions = "";
-//
-//                                                    $presidingOfficerCount = 0;
-//                                                    $officerCount = 0;
-//                                                    $votingCount = 0;
-//
-//                                                    foreach($positions as $p) {
-//                                                        $option = "<option value='$p[id]'>$p[name]</option>";
-//
-//                                                        if($p['presidingOfficer']) {
-//                                                            $presidingOfficerOptions .= $option;
-//                                                            $presidingOfficerCount++;
-//                                                        } else if($p['officer']) {
-//                                                            $officerOptions .= $option;
-//                                                            $officerCount++;
-//                                                        } else if($p['voting']) {
-//                                                            $votingOptions .= $option;
-//                                                            $votingCount++;
-//                                                        }
-//                                                    }
-//
-//                                                    if($presidingOfficerCount > 0) {
-//                                                        echo "<optgroup label='Presiding Officer" . ($presidingOfficerCount > 1 ? 's' : '') ."'>$presidingOfficerOptions</optgroup>";
-//                                                    }
-//
-//                                                    if($officerCount > 0) {
-//                                                        echo "<optgroup label='Officer" . ($officerCount > 1 ? 's' : '') ."'>$officerOptions</optgroup>";
-//                                                    }
-//
-//                                                    if($votingCount > 0) {
-//                                                        echo "<optgroup label='Voting Position" . ($votingCount > 1 ? 's' : '') ."'>$votingOptions</optgroup>";
-//                                                    }
-//                                                ?>
-<!--                                            </select>-->
-<!--                                        </div>-->
-<!--                                        <div class="form-group">-->
-<!--                                            <label>Membership-Specific Title</label>-->
-<!--                                            <input type="text" name="name" class="form-control" placeholder="Optional">-->
-<!--                                        </div>-->
-<!--                                        <div class="form-group">-->
-<!--                                            <label>Start Date --><?//=$requiredIndicator?><!--</label>-->
-<!--                                            <input type="date" name="startDate" class="form-control" placeholder="YYYY-MM-DD" value="--><?//=date('Y-m-d')?><!--">-->
-<!--                                        </div>-->
-<!--                                        <div class="form-group">-->
-<!--                                            <label>End Date</label>-->
-<!--                                            <input type="date" name="endDate" class="form-control" placeholder="YYYY-MM-DD">-->
-<!--                                        </div>-->
-<!---->
-<!--                                        <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Add Member</button>-->
-<!--                                        <div class="clearfix"></div>-->
-<!--                                    </form>-->
-<!--                                </div>-->
-<!--                            </div>-->
                         </div>
                     </div>
                 </div>

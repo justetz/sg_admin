@@ -18,7 +18,60 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
     unset($data['transaction']);
 
     if ($transaction == 'create_action') {
-        echo json_encode($data);
+        if(empty($data['actionText']) || empty($data['actionDescription']) || empty($data['actionStatus'])
+            || (empty($data['moving']) && empty($data['movingOtherEntity'])) || empty($data['seconding'])) {
+            $result = ['message' => 'Not all required fields have been filled out!'];
+        } else {
+            $meetingActions = Actions::read([
+                "meetingNum" => $data['meetingNum'],
+                "sort" => "-actionNum"
+            ]);
+
+            if(count($meetingActions) == 0) {
+                $actionNum = 1;
+            } else {
+                $actionNum = $meetingActions[0]['actionNum'] + 1;
+            }
+
+            $newAction = [
+                "bodyUniqueId" => $data['bodyUniqueId'],
+                "sessionUniqueId" => $data['sessionUniqueId'],
+                "meetingNum" => $data['meetingNum'],
+                "actionNum" => $actionNum,
+                "description" => $data['actionDescription'],
+                "text" => $data['actionText'],
+                "status" => $data['actionStatus'],
+                "votesFor" => isset($data['votesFor']) ? intval($data['votesFor']) : 0,
+                "votesAgainst" => isset($data['votesAgainst']) ? intval($data['votesAgainst']) : 0,
+                "abstentions" => isset($data['abstentions']) ? intval($data['abstentions']) : 0
+            ];
+
+            if(!empty($data['movingOtherEntity'])) {
+                $newAction['movingOtherEntity'] = $data['movingOtherEntity'];
+            } else {
+                if(isset($data['moving'])) {
+                    $movingDetails = explode('~', $data['moving'], 2);
+                    if($movingDetails[0] == 'membership') {
+                        $newAction['movingMemberId'] = $movingDetails[1];
+                    } else if($movingDetails[0] == 'subbody') {
+                        $newAction['movingSubbodyUniqueId'] = $movingDetails[1];
+                    }
+                }
+
+                if(isset($data['seconding'])) {
+                    $secondingDetails = explode('~', $data['seconding'], 2);
+                    if($secondingDetails[0] == 'membership') {
+                        $newAction['secondingMemberId'] = $secondingDetails[1];
+                    }
+                }
+            }
+
+            $result = Actions::create($newAction);
+
+            setcookie('SGMS-Success-Message', "The action $newAction[description] was successfully created!.", time() + 30);
+            header("location: ./action.php?bodyUniqueId=$newAction[bodyUniqueId]&sessionUniqueId=$newAction[sessionUniqueId]&meetingNum=$newAction[meetingNum]&actionNum=$newAction[actionNum]");
+            exit;
+        }
     }
 } else {
     $result = false;
@@ -47,6 +100,9 @@ if (isset($_GET['bodyUniqueId'])) {
     $meeting = null;
 }
 
+function isSubmissionAttempt () {
+    return $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction']) && $_POST['transaction'] == 'create_action';
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -74,12 +130,12 @@ if (isset($_GET['bodyUniqueId'])) {
                                                 if (isset($_GET['bodyUniqueId']) && !isset($_GET['sessionUniqueId']) && !isset($_GET['meetingNum'])) {
                                                     echo "<li class='active'>$body[name]</li>";
                                                 } else {
-                                                    echo "<li><a href='new_action.php?bodyUniqueId='>$body[name]</a></li>";
+                                                    echo "<li><a href='new_action.php?bodyUniqueId=$body[uniqueId]'>$body[name]</a></li>";
 
                                                     if (isset($_GET['bodyUniqueId']) && isset($_GET['sessionUniqueId']) && !isset($_GET['meetingNum'])) {
                                                         echo "<li class='active'>$session[name]</li>";
                                                     } else {
-                                                        echo "<li><a href='new_action.php'>$session[name]</a></li>";
+                                                        echo "<li><a href='new_action.php?bodyUniqueId=$body[uniqueId]&sessionUniqueId=$session[uniqueId]'>$session[name]</a></li>";
 
                                                         if (isset($_GET['bodyUniqueId']) && isset($_GET['sessionUniqueId']) && isset($_GET['meetingNum'])) {
                                                             echo "<li class='active'>" . constructMeetingTitle($meeting) . "</li>";
@@ -230,7 +286,8 @@ if (isset($_GET['bodyUniqueId'])) {
                                     </div>
                                     <div class="content content-even">
                                         <div class="form-group">
-                                            <textarea title="Action Text" name="actionText" rows="36" class="form-control" data-provide="markdown" data-iconlibrary="fa"></textarea>
+                                            <textarea title="Action Text" name="actionText" rows="36" class="form-control" data-provide="markdown"
+                                                  data-iconlibrary="fa"><?=isSubmissionAttempt() ? $_POST["actionText"] : ''?></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -246,12 +303,14 @@ if (isset($_GET['bodyUniqueId'])) {
                                                 <div class="form-group">
                                                     <label for="bodyName">Body</label>
                                                     <input name="bodyName" type="text" class="form-control" value="<?=$body['name']?>" disabled>
+                                                    <input name="bodyUniqueId" type="hidden" value="<?=$body['uniqueId']?>">
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="sessionName">Session</label>
                                                     <input name="sessionName" type="text" class="form-control" value="<?=$session['name']?>" disabled>
+                                                    <input name="sessionUniqueId" type="hidden" value="<?=$session['uniqueId']?>">
                                                 </div>
                                             </div>
                                         </div>
@@ -259,7 +318,8 @@ if (isset($_GET['bodyUniqueId'])) {
                                             <div class="col-md-12">
                                                 <div class="form-group">
                                                     <label for="actionDescription">Description <?=$requiredIndicator?></label>
-                                                    <input name="actionDescription" type="text" class="form-control">
+                                                    <input name="actionDescription" type="text" class="form-control"
+                                                           value="<?=isSubmissionAttempt() ? $_POST["actionDescription"] : ''?>">
                                                 </div>
                                             </div>
                                         </div>
@@ -268,6 +328,7 @@ if (isset($_GET['bodyUniqueId'])) {
                                                 <div class="form-group">
                                                     <label for="meetingName">Meeting</label>
                                                     <input name="meetingName" type="text" class="form-control" value="<?=constructMeetingTitle($meeting) . " ($meeting[displayDate])"?>" disabled>
+                                                    <input name="meetingNum" type="hidden" value="<?=$meeting['meetingNum']?>">
                                                 </div>
                                             </div>
                                         </div>
@@ -282,19 +343,22 @@ if (isset($_GET['bodyUniqueId'])) {
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label for="votesFor">Votes For <?=$requiredIndicator?></label>
-                                                    <input name="votesFor" id="votesFor" type="number" class="form-control" value="<?=$action['votesFor']?>">
+                                                    <input name="votesFor" id="votesFor" type="number" class="form-control"
+                                                           value="<?=isSubmissionAttempt() ? $_POST["votesFor"] : ''?>">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="votesFor">Votes Against <?=$requiredIndicator?></label>
-                                                    <input name="votesFor" id="votesFor" type="number" class="form-control" value="<?=$action['votesAgainst']?>">
+                                                    <label for="votesAgainst">Votes Against <?=$requiredIndicator?></label>
+                                                    <input name="votesAgainst" id="votesAgainst" type="number" class="form-control"
+                                                           value="<?=isSubmissionAttempt() ? $_POST["votesAgainst"] : ''?>">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="votesFor">Abstentions <?=$requiredIndicator?></label>
-                                                    <input name="votesFor" id="votesFor" type="number" class="form-control" value="<?=$action['abstentions']?>">
+                                                    <label for="abstentions">Abstentions <?=$requiredIndicator?></label>
+                                                    <input name="abstentions" id="abstentions" type="number" class="form-control"
+                                                           value="<?=isSubmissionAttempt() ? $_POST["abstentions"] : ''?>">
                                                 </div>
                                             </div>
                                         </div>
@@ -303,11 +367,13 @@ if (isset($_GET['bodyUniqueId'])) {
                                                 <div class="form-group">
                                                     <label for="actionStatus">Status <?=$requiredIndicator?></label>
                                                     <select name="actionStatus" class="form-control">
-                                                        <option selected disabled></option>
                                                         <?php
+                                                        if(!isSubmissionAttempt() || !isset($_POST['actionStatus'])) {
+                                                            echo "<option selected disabled></option>";
+                                                        }
 
                                                         foreach ($possibleActionStatuses as $s) {
-                                                            echo "<option value='$s'>$s</option>";
+                                                            echo "<option value='$s'" . (isSubmissionAttempt() && isset($_POST['actionStatus']) && $_POST['actionStatus'] == $s ? ' selected' : '') . ">$s</option>";
                                                         }
                                                         ?>
                                                     </select>
@@ -321,13 +387,25 @@ if (isset($_GET['bodyUniqueId'])) {
                                         <h4 class="title">Set Moved & Seconded</h4>
                                     </div>
                                     <div class="content">
+                                        <?php
+                                        $moverActiveId = '';
+                                        $seconderActiveId = '';
+
+                                        if(isSubmissionAttempt() && isset($_POST['moving'])) {
+                                            $moverActiveId = explode("~", $_POST['moving'], 2)[1];
+                                        }
+
+                                        if(isSubmissionAttempt() && isset($_POST['seconding'])) {
+                                            $seconderActiveId = explode("~", $_POST['seconding'], 2)[1];
+                                        }
+                                        ?>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <div class="form-group">
                                                     <label for="movingMemberId">Moved By <?=$requiredIndicator?></label>
                                                     <select name="moving" class="form-control">
                                                         <option disabled selected></option>
-                                                        <?=buildMembershipOptions($positions, $memberships, ["meeting" => $meeting], (isset($action['movingMemberId']) ? $action['movingMemberId'] : $action['movingSubbodyUniqueId']), $subbodies)?>
+                                                        <?=buildMembershipOptions($positions, $memberships, ["meeting" => $meeting], $moverActiveId, $subbodies)?>
                                                     </select>
                                                 </div>
                                             </div>
@@ -338,7 +416,7 @@ if (isset($_GET['bodyUniqueId'])) {
                                                     <label for="secondingMemberId">Seconded By <?=$requiredIndicator?></label>
                                                     <select name="seconding" class="form-control">
                                                         <option disabled selected></option>
-                                                        <?=buildMembershipOptions($positions, $memberships, ["meeting" => $meeting], $action['secondingMemberId'])?>
+                                                        <?=buildMembershipOptions($positions, $memberships, ["meeting" => $meeting], $seconderActiveId)?>
                                                     </select>
                                                     <p class="help-block small">If you selected a Sub-Body for the 'Moved By' field, the 'Seconded By' field will be ignored.</p>
                                                 </div>
@@ -349,7 +427,7 @@ if (isset($_GET['bodyUniqueId'])) {
                                             <div class="col-md-12">
                                                 <div class="form-group">
                                                     <label for="movingOtherEntity">Other Moving Entity</label>
-                                                    <input type="text" name="movingOtherEntity" class="form-control" value="<?=(isset($action['movingOtherEntity']) ? $action['movingOtherEntity'] : '')?>">
+                                                    <input type="text" name="movingOtherEntity" class="form-control" value="<?=(isSubmissionAttempt() && isset($_POST['movingOtherEntity']) ? $_POST['movingOtherEntity'] : '')?>">
                                                     <p class="help-block small">If you enter in a value here, the 'Moved By' and 'Seconded By' fields will be ignored.</p>
                                                 </div>
                                             </div>
@@ -366,5 +444,6 @@ if (isset($_GET['bodyUniqueId'])) {
     </div>
 </div>
 <?php require_once 'partials/scripts.php' ?>
+<?=buildMessage($result, $_POST)?>
 </body>
 </html>

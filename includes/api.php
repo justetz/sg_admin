@@ -103,6 +103,13 @@ abstract class APIModel {
     }
 }
 
+class API extends APIModel {
+    const ENDPOINT = '_models';
+    public static function getModels() {
+        return parent::executeAPIGet(null);
+    }
+}
+
 class People extends APIModel {
     const ENDPOINT = 'people';
 
@@ -128,7 +135,7 @@ class People extends APIModel {
 
             if(!$cmsData) {
                 return [
-                    'message' => 'Not found'
+                    'message' => 'Not Found'
                 ];
             }
 
@@ -189,6 +196,45 @@ class Meetings extends APIModel {
 
         return parent::create($data);
     }
+
+    protected static function deleteAssociated($values, $class) {
+        if (count($values) > 0) {
+            foreach($values as $v) {
+                $class::delete($v);
+            }
+        }
+    }
+
+    public static function delete($data) {
+        $params = [
+            'bodyUniqueId' => $data['bodyUniqueId'],
+            'sessionUniqueId' => $data['sessionUniqueId'],
+            'meetingNum' => $data['meetingNum'],
+        ];
+
+        self::deleteAssociated(Actions::read($params), Actions::class);
+        self::deleteAssociated(AgendaItems::read($params), AgendaItems::class);
+
+        $meetings = self::read([
+            'bodyUniqueId' => $data['bodyUniqueId'],
+            'sessionUniqueId' => $data['sessionUniqueId'],
+            'sort' => '-meetingNum'
+        ]);
+
+        foreach($meetings as $m) {
+            if($m['meetingNum'] > $data['meetingNum']) {
+                $oldMeetingNum = $m['meetingNum']--;
+
+                Actions::changeMeetingNum();
+
+                Meetings::update($m);
+            } else {
+                break;
+            }
+        }
+
+        return parent::delete($data);
+    }
 }
 
 class Memberships extends APIModel {
@@ -199,6 +245,16 @@ class Memberships extends APIModel {
 
         $data['bodyUniqueId'] = $position['bodyUniqueId'];
 
+        if(!isset($data['sessionUniqueId'])) {
+            $session = Sessions::read([
+                'bodyUniqueId' => $data['bodyUniqueId'],
+                'active' => 'true',
+                'count' => 1,
+            ])[0];
+
+            $data['sessionUniqueId'] = $session['uniqueId'];
+        }
+
         if (isset($data['positionId']) && (!isset($data['name']) || strlen($data['name']) == 0)) {
             $data['name'] = $position['name'];
         }
@@ -208,7 +264,7 @@ class Memberships extends APIModel {
         }
 
         $response = People::create([ 'rcsId' => $data['personRcsId'] ]);
-        if (!isset($response['message']) || $response['message'] !== 'Not found') {
+        if (!isset($response['message']) || $response['message'] !== 'Not Found') {
             return parent::create($data);
         } else {
             return $response;
@@ -222,10 +278,32 @@ class Actions extends APIModel {
     protected static function getUniqueId($data) {
         return "$data[bodyUniqueId]/$data[sessionUniqueId]/$data[meetingNum]/$data[actionNum]";
     }
+
+    public static function changeMeetingNum($bodyUniqueId, $sessionUniqueId, $oldMeetingNum, $newMeetingNum) {
+        $data = [
+            'bodyUniqueId' => $bodyUniqueId,
+            'sessionUniqueId' => $sessionUniqueId,
+            'meetingNum' => $oldMeetingNum,
+        ];
+
+        $actions = Actions::read($data);
+
+        if(count($actions) > 0) {
+            foreach($actions as $a) {
+                $actionId = $data;
+                $actionId['actionNum'] = $a['actionNum'];
+                static::executeAPICall("UPDATE", [ "meetingNum" => $newMeetingNum ], static::getUniqueId($actionId));
+            }
+        }
+    }
 }
 
 class AgendaItems extends APIModel {
     const ENDPOINT = 'agenda_items';
+}
+
+class Projects extends APIModel {
+    const ENDPOINT = 'projects';
 }
 
 class Sessions extends APIModel {

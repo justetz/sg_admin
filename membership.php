@@ -13,14 +13,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
     $transaction = $data['transaction'];
     unset($data['transaction']);
 
-    if ($transaction == 'delete_membership') {
-
+    if ($transaction == 'update_membership') {
+        $result = Memberships::update($data);
     } else {
         $result = false;
     }
 } else if(!isset($_GET['id'])) {
     header('location: ./people.php');
     exit;
+} else {
+    $result = false;
 }
 
 $membership = Memberships::getEntry($_GET['id']);
@@ -43,7 +45,7 @@ $pageTitle = "Manage Membership: $membership[name]";
                             <div class="content content-even">
                                 <ol class="breadcrumb">
                                     <li><a href="people.php">People & Memberships</a></li>
-                                    <li><a href="person.php?rcsId=<?=$membership['personRcsId']?>"><?=$membership['person']['name']?></a></li>
+                                    <li><a href="person.php?rcsId=<?=$membership['personRcsId']?>&section=memberships"><?=$membership['person']['name']?></a></li>
                                     <li class="active"><?=$membership['name']?></li>
                                 </ol>
                             </div>
@@ -105,18 +107,10 @@ $pageTitle = "Manage Membership: $membership[name]";
                                                 </label>
                                             </div>
                                         </div>
-                                        <div class="col-xs-6">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" name="current" data-toggle="checkbox" <?=$membership['current'] ? 'selected' : ''?>> Current Holder
-                                                </label>
-                                            </div>
-                                        </div>
                                     </div>
 
-                                    <input type="hidden" name="transaction" value="create_membership">
-                                    <input type="hidden" name="sessionUniqueId" value="<?=$_GET['uniqueId']?>">
-                                    <input type="hidden" name="bodyUniqueId" value="<?=$_GET['bodyUniqueId']?>">
+                                    <input type="hidden" name="transaction" value="update_membership">
+                                    <input type="hidden" name="id" value="<?=$_GET['id']?>">
                                     <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Update Membership</button>
                                     <div class="clearfix"></div>
                                 </form>

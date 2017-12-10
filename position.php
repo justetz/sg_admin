@@ -8,29 +8,24 @@ if (!phpCAS::isAuthenticated()) {
     exit;
 }
 
+$result = false;
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
     $data = $_POST;
     $transaction = $data['transaction'];
     unset($data['transaction']);
 
-    if ($transaction == 'update_session') {
-        $result = Sessions::update($data);
-    } else if($transaction == 'create_membership') {
+    if ($transaction == 'update_position') {
+        standardizeCheckboxInput($data, 'voting');
+        standardizeCheckboxInput($data, 'officer');
+        standardizeCheckboxInput($data, 'presidingOfficer');
+        $result = Positions::update($data);
+    } else if ($transaction == 'create_membership') {
         $result = Memberships::create($data);
-    } else if($transaction == 'create_subbody') {
-        $result = Subbodies::create($data);
-    } else if($transaction == 'create_meeting') {
-        $result = Meetings::create($data);
-    } else if($transaction == 'delete_meeting') {
-        $result = Meetings::delete($data);
-    } else {
-        $result = false;
     }
 } else if (!isset($_GET['id'])) {
     header('location: ./people.php');
     exit;
-} else {
-    $result = false;
 }
 
 $position = Positions::getEntry($_GET['id']);
@@ -56,7 +51,7 @@ $pageTitle = "Manage Position: $position[name]";
                         <div class="card">
                             <div class="content content-even">
                                 <ol class="breadcrumb">
-                                    <li><a href="people.php">People & Memberships</a></li>
+                                    <li><a href="positions.php">Positions</a></li>
                                     <li class="active"><?=$position['name']?></li>
                                 </ol>
                             </div>
@@ -77,6 +72,10 @@ $pageTitle = "Manage Position: $position[name]";
                                     </thead>
                                     <tbody>
                                     <?php
+                                    if(count($memberships) == 0) {
+                                        echo "<tr class='text-muted text-center'><td colspan='6'><em>$position[name] does not have any associated memberships!</em></td></tr>";
+                                    }
+
                                     foreach($memberships as $m) {
                                         echo "<tr>";
                                         echo "<td><a href='person.php?rcsId=$m[personRcsId]'>" . $m['person']['name'] . "</a></td>";
@@ -108,78 +107,37 @@ $pageTitle = "Manage Position: $position[name]";
                             <div class="content">
                                 <form method="post" action="<?=$_SERVER['REQUEST_URI']?>">
                                     <div class="form-group">
-                                        <label>Position Title <?=$requiredIndicator?></label>
-                                        <input type="text" class="form-control" value="<?=$position['name']?>">
+                                        <label for="positionName">Position Title <?=$requiredIndicator?></label>
+                                        <input type="text" class="form-control" name="name" id="positionName" value="<?=$position['name']?>">
                                     </div>
                                     <div class="form-group">
-                                        <label>Position Title <?=$requiredIndicator?></label>
-                                        <select class="form-control" name="bodyUniqueId">
-                                            <?php
-                                            $bodies = Bodies::read();
-
-                                            if(!isset($position['bodyUniqueId'])) {
-                                                echo "<option selected disabled></option>";
-                                            }
-
-                                            foreach($bodies as $b) {
-                                                echo "<option value='$b[uniqueId]' " . ((isset($position['bodyUniqueId']) && $position['bodyUniqueId'] == $b['uniqueId']) ? 'selected' : '') . ">$b[name]</option>";
-                                            }
-                                            ?>
-                                        </select>
+                                        <label for="bodyName">Body <?=$requiredIndicator?></label>
+                                        <input type="text" class="form-control" id="bodyName" disabled value="<?=$position['body']['name']?>">
                                     </div>
                                     <div class="checkbox">
                                         <label>
-                                            <input type="checkbox" name="yearOnly" data-toggle="checkbox" <?=$position['voting'] ? 'checked' : ''?>> Is Voting
+                                            <input type="checkbox" name="voting" data-toggle="checkbox" <?=$position['voting'] ? 'checked' : ''?>> Is Voting
                                         </label>
                                     </div>
                                     <div class="checkbox">
                                         <label>
-                                            <input type="checkbox" name="yearOnly" data-toggle="checkbox" <?=$position['officer'] ? 'checked' : ''?>> Is Officer
+                                            <input type="checkbox" name="officer" data-toggle="checkbox" <?=$position['officer'] ? 'checked' : ''?>> Is Officer
                                         </label>
                                     </div>
                                     <div class="checkbox">
                                         <label>
-                                            <input type="checkbox" name="yearOnly" data-toggle="checkbox" <?=$position['presidingOfficer'] ? 'checked' : ''?>> Is Presiding Officer
+                                            <input type="checkbox" name="presidingOfficer" data-toggle="checkbox" <?=$position['presidingOfficer'] ? 'checked' : ''?>> Is Presiding Officer
                                         </label>
                                     </div>
 
+                                    <input type="hidden" name="transaction" value="update_position">
+                                    <input type="hidden" name="id" value="<?=$position['id']?>">
                                     <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Update Position</button>
                                     <div class="clearfix"></div>
                                 </form>
                             </div>
                         </div>
-                        <div class="card">
-                            <div class="header">
-                                <h4 class="title">Add Membership</h4>
-                            </div>
-                            <div class="content">
-                                <form>
-                                    <div class="form-group">
-                                        <label>RCS ID <?=$requiredIndicator?></label>
-                                        <input type="text" name="rcsId" class="form-control" placeholder="RCS ID">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Position <?=$requiredIndicator?></label>
-                                        <input type="text" class="form-control" disabled value="<?=$position['name']?>">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Membership-Specific Title</label>
-                                        <input type="text" name="name" class="form-control" placeholder="Optional">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Start Date <?=$requiredIndicator?></label>
-                                        <input type="date" name="startDate" class="form-control" placeholder="YYYY-MM-DD" value="<?=date('Y-m-d')?>">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>End Date</label>
-                                        <input type="date" name="endDate" class="form-control" placeholder="YYYY-MM-DD">
-                                    </div>
-
-                                    <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Add Member</button>
-                                    <div class="clearfix"></div>
-                                </form>
-                            </div>
-                        </div>
+                        <?=generateAddMembershipCard('create_membership', $position['bodyUniqueId'], null, $position['id'], null)?>
                     </div>
                 </div>
             </div>

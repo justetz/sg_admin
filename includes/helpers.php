@@ -36,20 +36,24 @@ function buildMessage ($result, $data) {
 
         return '';
     } else if(isset($result['message'])) {
-        $message = "$result[message]: ";
+        $message = "$result[message]";
         $i = 0;
 
-        foreach($result['errors'] as $error) {
-            if($i > 0) {
-                $message .= ', ';
-            }
+        if(isset($result['errors'])) {
+            foreach ($result['errors'] as $error) {
+                if ($i > 0) {
+                    $message .= ', ';
+                } else {
+                    $message .= ': ';
+                }
 
-            if($i == count($result['errors']) - 1) {
-                $message .= 'and ';
-            }
+                if ($i == count($result['errors']) - 1) {
+                    $message .= 'and ';
+                }
 
-            $message .= "$error[message]";
-            $i++;
+                $message .= "$error[message]";
+                $i++;
+            }
         }
 
         return "<script type='text/javascript'>
@@ -91,7 +95,7 @@ function constructMeetingTitle ($meeting, $session=false) {
     return "$session[name] - Meeting #$meeting[meetingNum]";
 }
 
-function generateAddMembershipCard ($transaction, $bodyUniqueId=null, $sessionUniqueId=null, $positionId=null) {
+function generateAddMembershipCard ($transaction, $bodyUniqueId=null, $sessionUniqueId=null, $positionId=null, $personRcsId=null) {
     $positionOptions = '';
 
     if(!isset($positionId)) {
@@ -110,13 +114,11 @@ function generateAddMembershipCard ($transaction, $bodyUniqueId=null, $sessionUn
         $votingCount = 0;
 
         foreach ($positions as $p) {
-            $option = "<option value='$p[id]'>$p[name]";
-
-            if (!isset($bodyUniqueId)) {
-                $option .= ' (' . $p['body']['name'] . ')';
+            if(!isset($bodyUniqueId)) {
+                $option = "<option value='$p[id]'>$p[name] (" . $p['body']['name'] . ")</option>";
+            } else {
+                $option = "<option value='$p[id]'>$p[name]</option>";
             }
-
-            $option .= "</option>";
 
             if ($p['presidingOfficer']) {
                 $presidingOfficerOptions .= $option;
@@ -151,9 +153,15 @@ function generateAddMembershipCard ($transaction, $bodyUniqueId=null, $sessionUn
 
     $addMembershipCard .= "<div class='content'><form method='post' action='$_SERVER[REQUEST_URI]'>";
 
+
     $addMembershipCard .= "<div class='form-group'>";
     $addMembershipCard .= "    <label>RCS ID " . REQUIRED_INDICATOR . "</label>";
-    $addMembershipCard .= "    <input type='text' name='personRcsId' class='form-control' placeholder='RCS ID'>";
+    if (isset($personRcsId)) {
+        $addMembershipCard .= "    <input type='text' name='displayRcsId' class='form-control' value='$personRcsId' disabled>";
+        $addMembershipCard .= "    <input type='hidden' name='personRcsId' value='$personRcsId'>";
+    } else {
+        $addMembershipCard .= "    <input type='text' name='personRcsId' class='form-control' placeholder='RCS ID'>";
+    }
     $addMembershipCard .= "</div>";
 
     if (isset($sessionUniqueId)) {
@@ -161,13 +169,29 @@ function generateAddMembershipCard ($transaction, $bodyUniqueId=null, $sessionUn
     }
 
     $addMembershipCard .= "<div class='form-group'>";
-    $addMembershipCard .= "    <label>Position " . REQUIRED_INDICATOR . "</label>";
-    $addMembershipCard .= "    <select name='positionId' class='form-control'>";
-    $addMembershipCard .= "        <option disabled selected>Select a position...</option>";
-    $addMembershipCard .= "        $positionOptions";
-    $addMembershipCard .= "    </select>";
-    if (!isset($sessionUniqueId)) {
-        $addMembershipCard .= "<p class='help-block small'>This will add the membership to the current session of the respective body.</p>";
+    if(!isset($positionId)) {
+        $addMembershipCard .= "<label>Position " . REQUIRED_INDICATOR . "</label>";
+        $addMembershipCard .= "<select name='positionId' class='form-control'>";
+        $addMembershipCard .= "    <option disabled selected>Select a position...</option>";
+        $addMembershipCard .= "    $positionOptions";
+        $addMembershipCard .= "</select>";
+        if (!isset($sessionUniqueId)) {
+            $addMembershipCard .= "<p class='help-block small'>This will add the membership to the current session of the respective body.</p>";
+        }
+    } else {
+        $addMembershipCard .= "<input type='hidden' name='positionId' value='$positionId'>";
+        if (!isset($sessionUniqueId) && isset($bodyUniqueId)) {
+            $addMembershipCard .= "<label>Session " . REQUIRED_INDICATOR . "</label>";
+            $addMembershipCard .= "<select name='sessionUniqueId' class='form-control'>";
+            $addMembershipCard .= "    <option disabled selected>Select a session...</option>";
+
+            $sessions = Sessions::read([ 'bodyUniqueId' => $bodyUniqueId, 'sort' => '-name' ]);
+            foreach($sessions as $s) {
+                $addMembershipCard .= "<option value='$s[uniqueId]'>$s[name]</option>";
+            }
+
+            $addMembershipCard .= "</select>";
+        }
     }
     $addMembershipCard .= "</div>";
 
@@ -242,4 +266,12 @@ function buildMembershipOptions ($positions, $memberships, $action=null, $active
     }
 
     return $result;
+}
+
+function standardizeCheckboxInput($obj, $key) {
+    if (isset($obj[$key]) && $obj[$key] == 'on') {
+        $obj[$key] = true;
+    } else if(!isset($obj[$key]) || $obj[$key] != true) {
+        $obj[$key] = false;
+    }
 }

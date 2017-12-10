@@ -23,8 +23,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
         $result = Subbodies::create($data);
     } else if($transaction == 'create_meeting') {
         $result = Meetings::create($data);
+    } else if($transaction == 'create_project') {
+        $result = Projects::create($data);
     } else if($transaction == 'delete_meeting') {
         $result = Meetings::delete($data);
+    } else if($transaction == 'delete_project') {
+        $result = Projects::delete($data);
     } else {
         $result = false;
     }
@@ -58,6 +62,11 @@ $meetings = Meetings::read([
     "sessionUniqueId" => $_GET['uniqueId'],
 ]);
 
+$projects = Projects::read([
+    "bodyUniqueId" => $_GET['bodyUniqueId'],
+    "sessionUniqueId" => $_GET['uniqueId'],
+]);
+
 $pageTitle = "Manage Session: " . $session['name'];
 
 $officersTable = "";
@@ -85,7 +94,7 @@ foreach($memberships as $m) {
     $row .= "<td><a href='/person.php?rcsId=$m[personRcsId]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a></td>";
     $row .= "</tr>";
 
-    if($m['current']) {
+    if(!$session['active'] || $m['current']) {
         if($m['position']['officer']) {
             $officersTable .= $row;
             $officersCount++;
@@ -134,13 +143,17 @@ foreach($memberships as $m) {
                                         <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'meetings') ? 'class="active"' : ''?>>
                                             <a href="<?=toggleGetParam('section','meetings')?>">Meetings</a>
                                         </li>
+
+                                        <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'projects') ? 'class="active"' : ''?>>
+                                            <a href="<?=toggleGetParam('section','projects')?>">Projects</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
                             <?php if(!isset($_GET['section']) || $_GET['section'] == 'membership') { ?>
                                 <div class="card">
                                     <div class="header">
-                                        <h4 class="title">Current Officers</h4>
+                                        <h4 class="title"><?=$session['active'] ? 'Current ' : ''?>Officers</h4>
                                     </div>
                                     <div class="content table-responsive table-full-width">
                                         <table class="table table-hover table-striped">
@@ -149,14 +162,14 @@ foreach($memberships as $m) {
                                             </thead>
                                             <tbody>
                                                 <?=$officersTable?>
-                                                <?=$officersCount == 0 ? '<td colspan="4" class="text-center"><em class="text-muted">No officers are currently active in this session!</em></td>' : ''?>
+                                                <?=$officersCount == 0 ? ('<td colspan="4" class="text-center"><em class="text-muted">No officers ' . ($session['active'] ? 'are currently active' : 'exist')  . ' in this session!</em></td>') : ''?>
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
                                 <div class="card">
                                     <div class="header">
-                                        <h4 class="title">Current Voting Members</h4>
+                                        <h4 class="title"><?=$session['active'] ? 'Current ' : ''?>Voting Members</h4>
                                     </div>
                                     <div class="content table-responsive table-full-width">
                                         <table class="table table-hover table-striped">
@@ -165,7 +178,7 @@ foreach($memberships as $m) {
                                             </thead>
                                             <tbody>
                                                 <?=$votingMembersTable?>
-                                                <?=$votingMembersCount == 0 ? '<td colspan="4" class="text-center"><em class="text-muted">No voting members are currently active in this session!</em></td>' : ''?>
+                                                <?=$votingMembersCount == 0 ? ('<td colspan="4" class="text-center"><em class="text-muted">No voting members ' . ($session['active'] ? 'are currently active' : 'exist')  . ' in this session!</em></td>') : ''?>
                                             </tbody>
                                         </table>
                                     </div>
@@ -226,6 +239,10 @@ foreach($memberships as $m) {
                                                         echo "<td><a href='/subbody.php?bodyUniqueId=$sub[bodyUniqueId]&sessionUniqueId=$sub[sessionUniqueId]&uniqueId=$sub[uniqueId]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a></td>";
                                                         echo "</tr>";
                                                     }
+
+                                                    if(count($subbodies) == 0) {
+                                                        echo "<td colspan=\"4\" class=\"text-center\"><em class=\"text-muted\">No subbodies exsthis session!</em></td>";
+                                                    }
                                                 ?>
                                             </tbody>
                                         </table>
@@ -248,26 +265,69 @@ foreach($memberships as $m) {
                                             </thead>
                                             <tbody>
                                                 <?php
-                                                    foreach($meetings as $m) {
-                                                        echo "<tr>";
-                                                        echo "<td>$session[name] - Meeting #$m[meetingNum]</td>";
-                                                        echo "<td>$m[displayDate]</td>";
-                                                        echo "<td>$m[location]</td>";
-                                                        echo "<td></td>";
-                                                        echo "<td>
-                                                            <form class='form-inline' method='post' action='$_SERVER[REQUEST_URI]' onsubmit='return confirm(\"Are you sure you want to delete $session[name] - Meeting #$m[meetingNum]?\");'>
-                                                                <a href='/meeting.php?bodyUniqueId=$m[bodyUniqueId]&sessionUniqueId=$m[sessionUniqueId]&meetingNum=$m[meetingNum]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a>
+                                                foreach($meetings as $m) {
+                                                    echo "<tr>";
+                                                    echo "<td>$session[name] - Meeting #$m[meetingNum]</td>";
+                                                    echo "<td>$m[displayDate]</td>";
+                                                    echo "<td>$m[location]</td>";
+                                                    echo "<td></td>";
+                                                    echo "<td>
+                                                        <form class='form-inline' method='post' action='$_SERVER[REQUEST_URI]' onsubmit='return confirm(\"Are you sure you want to delete $session[name] - Meeting #$m[meetingNum]?\");'>
+                                                            <a href='/meeting.php?bodyUniqueId=$m[bodyUniqueId]&sessionUniqueId=$m[sessionUniqueId]&meetingNum=$m[meetingNum]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a>
+                                                            
+                                                            <input type=\"hidden\" name=\"transaction\" value=\"delete_meeting\">
+                                                            <input type=\"hidden\" name=\"sessionUniqueId\" value=\"$_GET[uniqueId]\">
+                                                            <input type=\"hidden\" name=\"bodyUniqueId\" value=\"$_GET[bodyUniqueId]\">
+                                                            <input type=\"hidden\" name=\"meetingNum\" value=\"$m[meetingNum]\">
+                                                            <button class=\"btn btn-default btn-xs\" type='submit'><span class='fa fa-trash'></span></button>
+                                                        </form>
+                                                    </td>";
+                                                    echo "</tr>";
+                                                }
+                                                ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            <?php } else if(isset($_GET['section']) && $_GET['section'] == 'projects') { ?>
+                                <div class="card">
+                                    <div class="header">
+                                        <h4 class="title">Projects</h4>
+                                    </div>
+                                    <div class="content table-responsive table-full-width">
+                                        <table class="table table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Assigned Sub-Body</th>
+                                                <th>Contact Person</th>
+                                                <th></th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <?php
+                                            if(count($projects) == 0) {
+                                                echo "<tr class='text-muted text-center'><td colspan='4'><em>No projects were found for the $session[name]!</em></td></tr>";
+                                            } else {
+                                                foreach ($projects as $p) {
+                                                    echo "<tr>";
+                                                    echo "<td>$p[name]</td>";
+                                                    echo "<td>" . (isset($p['subbodyUniqueId']) ? ("<a href='/subbody.php?bodyUniqueId=$p[bodyUniqueId]&sessionUniqueId=$p[sessionUniqueId]&uniqueId=$p[subbodyUniqueId]'>" . $p['subbody']['name'] . "</a>") : "None") . "</td>";
+                                                    echo "<td>" . (isset($p['contactPersonRcsId']) ? ("<a href='/person.php?rcsId=$p[contactPersonRcsId]'>" . $p['contactPerson']['name'] . "</a>") : "None") . "</td>";
+                                                    echo "<td></td>";
+                                                    echo "<td>
+                                                            <form class='form-inline' method='post' action='$_SERVER[REQUEST_URI]' onsubmit='return confirm(\"Are you sure you want to delete $p[name]?\");'>
+                                                                <a href='/project.php?id=$p[id]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a>
                                                                 
-                                                                <input type=\"hidden\" name=\"transaction\" value=\"delete_meeting\">
-                                                                <input type=\"hidden\" name=\"sessionUniqueId\" value=\"$_GET[uniqueId]\">
-                                                                <input type=\"hidden\" name=\"bodyUniqueId\" value=\"$_GET[bodyUniqueId]\">
-                                                                <input type=\"hidden\" name=\"meetingNum\" value=\"$m[meetingNum]\">
+                                                                <input type=\"hidden\" name=\"transaction\" value=\"delete_project\">
+                                                                <input type=\"hidden\" name=\"id\" value=\"$p[id]\">
                                                                 <button class=\"btn btn-default btn-xs\" type='submit'><span class='fa fa-trash'></span></button>
                                                             </form>
                                                         </td>";
-                                                        echo "</tr>";
-                                                    }
-                                                ?>
+                                                    echo "</tr>";
+                                                }
+                                            }
+                                            ?>
                                             </tbody>
                                         </table>
                                     </div>
@@ -484,6 +544,59 @@ foreach($memberships as $m) {
                                         </form>
                                     </div>
                                 </div>
+                            <?php } else if(isset($_GET['section']) && $_GET['section'] == 'projects') { ?>
+                                <div class="card">
+                                    <div class="header">
+                                        <h4 class="title">Add Project</h4>
+                                    </div>
+                                    <div class="content">
+                                        <form method="post" action="<?=$_SERVER['REQUEST_URI']?>">
+                                            <div class="form-group">
+                                                <label for="projectName">Name <?=$requiredIndicator?></label>
+                                                <input type="text" name="name" id="projectName" class="form-control" placeholder="Name">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="projectDescription">Description <?=$requiredIndicator?></label>
+                                                <textarea name="description" id="projectDescription" class="form-control" placeholder="Description"></textarea>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="projectSubbodyUniqueId">Assigned Sub-Body</label>
+                                                <select class="form-control" name="subbodyUniqueId" id="projectSubbodyUniqueId">
+                                                    <option selected disabled>Select a sub-body...</option>
+                                                    <?php
+                                                    $alreadyDisplayed = [];
+
+                                                    foreach($subbodies as $sub) {
+                                                        echo "<option value='$sub[uniqueId]'>" . $sub['name'] . "</option>";
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="projectContactPerson">Contact Person</label>
+                                                <select class="form-control" name="contactPersonRcsId" id="projectContactPerson">
+                                                    <option selected disabled>Select a contact person...</option>
+                                                    <?php
+                                                    $alreadyDisplayed = [];
+
+                                                    foreach($memberships as $m) {
+                                                        if((!$session['active'] || $m['current']) && (!isset($alreadyDisplayed[$m['personRcsId']]) || !$alreadyDisplayed[$m['personRcsId']])) {
+                                                            echo "<option value='$m[personRcsId]'>" . $m['person']['name'] . "</option>";
+                                                            $alreadyDisplayed[$m['personRcsId']] = true;
+                                                        }
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <input type="hidden" name="transaction" value="create_project">
+                                            <input type="hidden" name="sessionUniqueId" value="<?=$_GET['uniqueId']?>">
+                                            <input type="hidden" name="bodyUniqueId" value="<?=$_GET['bodyUniqueId']?>">
+                                            <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Add Project</button>
+                                            <div class="clearfix"></div>
+                                        </form>
+                                    </div>
+                                </div>
                             <?php } ?>
                         </div>
                     </div>
@@ -494,6 +607,5 @@ foreach($memberships as $m) {
     </div>
     <?php require_once 'partials/scripts.php' ?>
     <?=buildMessage($result, $_POST)?>
-
 </body>
 </html>

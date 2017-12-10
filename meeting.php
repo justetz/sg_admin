@@ -263,8 +263,14 @@ function recursivelyBuildAgendaSelect($agendaItems, $depth=0) {
                                                 echo "<td><a href='/person.php?rcsId=" . $a['movingMember']['person']['rcsId'] . "'>" . $a['movingMember']['person']['name'] . "</a></td>";
                                                 echo "<td><a href='/person.php?rcsId=" . $a['secondingMember']['person']['rcsId'] . "'>" . $a['secondingMember']['person']['name'] . "</a></td>";
                                             } else if(isset($a['movingSubbodyUniqueId'])) {
-                                                echo "<td></td>";
+                                                echo "<td><a href='/subbody.php?bodyUniqueId=$a[bodyUniqueId]&sessionUniqueId=$a[sessionUniqueId]&uniqueId=$a[movingSubbodyUniqueId]'>" . $a['subbody']['name'] . "</a></td>";
                                                 echo "<td><em>N/A</em></td>";
+                                            } else if($a['movingOtherEntity']) {
+                                                echo "<td>$a[movingOtherEntity]</td>";
+                                                echo "<td><em>N/A</em></td>";
+                                            } else {
+                                                echo "<td><em>TBD</em></td>";
+                                                echo "<td><em>TBD</em></td>";
                                             }
 
                                             echo "<td>

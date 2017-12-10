@@ -15,21 +15,37 @@
 
         return "";
     }
+
+    function addActiveClassForProfileAppropriately() {
+        if (explode("?", $_SERVER['REQUEST_URI'], 2)[0]  == '/person.php' && isset($_GET['rcsId']) && $_GET['rcsId'] == strtolower(phpCAS::getUser())) {
+            return "class='active'";
+        } else {
+            return "";
+        }
+    }
+
+    function addActiveClassForPersonPageAppropriately() {
+        if (explode("?", $_SERVER['REQUEST_URI'], 2)[0]  == '/person.php' && (!isset($_GET['rcsId']) || $_GET['rcsId'] != strtolower(phpCAS::getUser()))) {
+            return "class='active'";
+        } else {
+            return "";
+        }
+    }
 ?>
 
 <div class="sidebar" data-color="red">
     <div class="sidebar-wrapper">
         <div class="logo">
-            <a href="/dashboard.php" class="simple-text">
+            <a href="/person.php?rcsId=<?=strtolower(phpCAS::getUser())?>" class="simple-text">
                 SG Management Tool
             </a>
         </div>
 
         <ul class="nav">
-            <li <?=addActiveClassAppropriately("/dashboard.php")?>>
-                <a href="/dashboard.php">
-                    <i class="pe-7s-graph"></i>
-                    <p>Dashboard</p>
+            <li <?=addActiveClassForProfileAppropriately()?>>
+                <a href="/person.php?rcsId=<?=strtolower(phpCAS::getUser())?>">
+                    <i class="pe-7s-home"></i>
+                    <p>My Profile</p>
                 </a>
             </li>
             <li <?=addActiveClassAppropriatelyMultiple(["/sessions.php", "/body.php", "/session.php", "/subbody.php"])?>>
@@ -38,10 +54,16 @@
                     <p>Bodies &amp; Sessions</p>
                 </a>
             </li>
-            <li <?=addActiveClassAppropriatelyMultiple(["/people.php", "/person.php"])?>>
+            <li <?=addActiveClassAppropriately("/people.php")?> <?=addActiveClassForPersonPageAppropriately()?>>
                 <a href="/people.php">
                     <i class="pe-7s-user"></i>
                     <p>People &amp; Memberships</p>
+                </a>
+            </li>
+            <li <?=addActiveClassAppropriatelyMultiple(["/positions.php", "/position.php"])?>>
+                <a href="/positions.php">
+                    <i class="pe-7s-portfolio"></i>
+                    <p>Positions</p>
                 </a>
             </li>
             <li <?=addActiveClassAppropriatelyMultiple(["/meetings.php", "/meeting.php"])?>>
@@ -54,6 +76,12 @@
                 <a href="/actions.php">
                     <i class="pe-7s-hammer"></i>
                     <p>Actions</p>
+                </a>
+            </li>
+            <li <?=addActiveClassAppropriatelyMultiple(["/projects.php", "/project.php"])?>>
+                <a href="/projects.php">
+                    <i class="pe-7s-note2"></i>
+                    <p>Projects</p>
                 </a>
             </li>
         </ul>
