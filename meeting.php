@@ -10,21 +10,86 @@ if (!phpCAS::isAuthenticated()) {
     exit;
 }
 
-
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
     $data = $_POST;
     $transaction = $data['transaction'];
     unset($data['transaction']);
 
-    $meeting = Meetings::getEntry("$data[bodyUniqueId]/$data[sessionUniqueId]/$data[meetingNum]");
-
     if ($transaction == 'create_agenda_item') {
+        if ($data['parentId'] == -1) {
+            if ($data['previousItem'] == -1) {
+                $lastItem = AgendaItems::read([
+                    'bodyUniqueId' => $_GET['bodyUniqueId'],
+                    'sessionUniqueId' => $_GET['sessionUniqueId'],
+                    'meetingNum' => $_GET['meetingNum'],
+                    'sort' => '-order',
+                    'count' => 1
+                ]);
 
+                if (count($lastItem) == 0) {
+                    $data['order'] = 1;
+                } else {
+                    $data['order'] = $lastItem[0]['order'] + 1;
+                }
+            } else {
+                $previousItemOrder = AgendaItems::getEntry($data['previousItem'])['order'];
+                $data['order'] = $previousItemOrder;
+
+                $itemsToIncrement = AgendaItems::read([
+                    'bodyUniqueId' => $_GET['bodyUniqueId'],
+                    'sessionUniqueId' => $_GET['sessionUniqueId'],
+                    'meetingNum' => $_GET['meetingNum'],
+                    'sort' => '-order'
+                ]);
+
+                foreach ($itemsToIncrement as $i) {
+                    if ($i['order'] >= $previousItemOrder) {
+                        $i['order']++;
+                        AgendaItems::update($i);
+                    }
+                }
+            }
+        } else {
+            $lastItem = AgendaItems::read([
+                'bodyUniqueId' => $_GET['bodyUniqueId'],
+                'sessionUniqueId' => $_GET['sessionUniqueId'],
+                'meetingNum' => $_GET['meetingNum'],
+                'parentId' => $data['parentId'],
+                'sort' => '-order',
+                'count' => 1
+            ]);
+
+            if (count($lastItem) == 0) {
+                $data['order'] = 1;
+            } else {
+                $data['order'] = $lastItem[0]['order'] + 1;
+            }
+        }
+
+        $result = AgendaItems::create($data);
+    } else if ($transaction == 'duplicate_agenda') {
+        $existingItems = AgendaItems::read([
+            'bodyUniqueId' => $data['bodyUniqueId'],
+            'sessionUniqueId' => $data['sessionUniqueId'],
+            'meetingNum' => $data['meetingNum']
+        ]);
+
+        if (count($existingItems) > 0) {
+            foreach($existingItems as $i) {
+                AgendaItems::delete($i);
+            }
+        }
+
+        recursivelyDuplicateAgenda($data['bodyUniqueId'], $data['sessionUniqueId'], $data['targetMeetingNum'], $data['meetingNum']);
+        $result = ['message' => 'The agenda was successfully duplicated!'];
+    } else if ($transaction == 'delete_agenda_item') {
+        $result = AgendaItems::delete($data);
     } else if ($transaction == 'update_minutes') {
+        $meeting = Meetings::getEntry("$data[bodyUniqueId]/$data[sessionUniqueId]/$data[meetingNum]");
+
         if(isset($data['minutesText']) && $meeting['minutesText'] != $data['minutesText']) {
             $meeting['minutesText'] = $data['minutesText'];
-
-            Meetings::update($meeting);
+            $result = Meetings::update($meeting);
         }
     }
 } else if(!isset($_GET['meetingNum']) || !isset($_GET['sessionUniqueId']) || !isset($_GET['bodyUniqueId'])) {
@@ -42,11 +107,11 @@ $actions = Actions::read([
     'sort' => 'actionNum',
 ]);
 
-$agendaItems = recursivelyLoadSubitems();
+$agendaItems = loadAgendaItems();
 
 $pageTitle = "Manage Meeting: " . constructMeetingTitle($meeting, $meeting['session']);
 
-function recursivelyLoadSubitems ($parentId='null') {
+function loadAgendaItems ($parentId='[null,-1]') {
     $agendaItems = AgendaItems::read([
         'bodyUniqueId' => $_GET['bodyUniqueId'],
         'sessionUniqueId' => $_GET['sessionUniqueId'],
@@ -55,81 +120,74 @@ function recursivelyLoadSubitems ($parentId='null') {
         'sort' => 'order,name',
     ]);
 
-    foreach($agendaItems as $i) {
-        $i['subItems'] = json_decode(json_encode(recursivelyLoadSubitems($i['id'])), true);
-
-        if(!isset($i['subItems'])) {
-            $i['subitems'] = [];
-        }
-    }
-
-    return json_decode(json_encode($agendaItems), true);
+    return $agendaItems;
 }
 
 function recursivelyBuildAgenda ($agendaItems, $depth=0) {
     $result = '';
 
-    foreach($agendaItems as $index => $i) {
-        $result .= "<tr>";
+    if(count($agendaItems) > 0) {
+        foreach ($agendaItems as $index => $i) {
+            $result .= "<tr>";
 
-        $result .= "<td width='10%'><div class='btn-group'>";
-        if($index > 0) {
-            $result .= "<a class='btn btn-xs btn-default' href=''><span class='fa fa-arrow-up'></span></a>";
-        } else {
-            $result .= "<a class='btn btn-xs btn-default disabled' href=''><span class='fa fa-arrow-up'></span></a>";
-        }
-        if ($index < count($agendaItems) - 1) {
-            $result .= "<a class='btn btn-xs btn-default' href=''><span class='fa fa-arrow-down'></span></a>";
-        } else {
-            $result .= "<a class='btn btn-xs btn-default disabled'><span class='fa fa-arrow-down'></span></a>";
-        }
-        $result .= "</div></td>";
+            $result .= "<td width='10%'><div class='btn-group'>";
+            if ($index > 0) {
+                $result .= "<a class='btn btn-xs btn-default' href=''><span class='fa fa-arrow-up'></span></a>";
+            } else {
+                $result .= "<a class='btn btn-xs btn-default disabled' href=''><span class='fa fa-arrow-up'></span></a>";
+            }
+            if ($index < count($agendaItems) - 1) {
+                $result .= "<a class='btn btn-xs btn-default' href=''><span class='fa fa-arrow-down'></span></a>";
+            } else {
+                $result .= "<a class='btn btn-xs btn-default disabled'><span class='fa fa-arrow-down'></span></a>";
+            }
+            $result .= "</div></td>";
 
-        $result .= "<td width='40%'>";
-        if($depth > 0) {
-            $result .= "<span style='padding-left: " . (20 * $depth) . "px;'>$i[name]</span>";
-        } else {
-            $result .= "<strong>$i[name]</strong>";
-        }
-        $result .= "</td>";
+            $result .= "<td width='40%'>";
+            if ($depth > 0) {
+                $result .= "<span style='padding-left: " . (20 * $depth) . "px;'>$i[name]</span>";
+            } else {
+                $result .= "<strong>$i[name]</strong>";
+            }
+            $result .= "</td>";
 
-        $result .= "<td width='40%'>";
-        if(isset($i['presenter'])) {
-            $result .= "<em>$i[presenter]</em>";
-        } else {
-            $result .= "<em class='text-muted'>None</em>";
-        }
-        $result .= "</td>";
+            $result .= "<td width='40%'>";
+            if (isset($i['presenter'])) {
+                $result .= "<em>$i[presenter]</em>";
+            } else {
+                $result .= "<em class='text-muted'>None</em>";
+            }
+            $result .= "</td>";
 
-        $result .= "<td width='10%'><div class='btn-group'>";
+            $result .= "<td width='10%'><div class='btn-group pull-right'>";
 
-        if($depth > 0) {
-            $result .= "<a class='btn btn-xs btn-default' href=''><span class='fa fa-arrow-left'></span></a>";
-        } else {
-            $result .= "<a class='btn btn-xs btn-default disabled' href=''><span class='fa fa-arrow-left'></span></a>";
-        }
+            if ($depth > 0) {
+                $result .= "<a class='btn btn-xs btn-default' href=''><span class='fa fa-arrow-left'></span></a>";
+            } else {
+                $result .= "<a class='btn btn-xs btn-default disabled' href=''><span class='fa fa-arrow-left'></span></a>";
+            }
 
-        if($index > 0) {
-            $result .= "<a class='btn btn-xs btn-default' href=''><span class='fa fa-arrow-right'></span></a>";
-        } else {
-            $result .= "<a class='btn btn-xs btn-default disabled' href=''><span class='fa fa-arrow-right'></span></a>";
-        }
+            if ($index > 0) {
+                $result .= "<a class='btn btn-xs btn-default' href=''><span class='fa fa-arrow-right'></span></a>";
+            } else {
+                $result .= "<a class='btn btn-xs btn-default disabled' href=''><span class='fa fa-arrow-right'></span></a>";
+            }
 
-        $result .= "</div></td>";
+            $result .= "</div></td>";
 
-        $result .= "</tr>";
+            $result .= "<td><form class='form-inline' method='post' onsubmit='return confirm(\"Are you sure you want to delete $i[name]?\");'>";
+            $result .= "<input type='hidden' name='transaction' value='delete_agenda_item'>";
+            $result .= "<input type='hidden' name='id' value='$i[id]'>";
+            $result .= "<button type='submit' class='btn btn-xs btn-default'><span class='fa fa-trash'></span></button>";
+            $result .= "</form></td>";
 
-        if(isset($i['subItems']) && count($i['subItems']) > 0) {
-            $returned = recursivelyBuildAgenda($i['subItems'], $depth + 1);
-            $result .= $returned['table'];
-            $i['subItems'] = $returned['agendaItems'];
+            $result .= "</tr>";
+
+            $result .= recursivelyBuildAgenda(loadAgendaItems($i['id']), $depth + 1);
         }
     }
 
-    return [
-        "table" => $result,
-        "agendaItems" => $agendaItems
-    ];
+    return $result;
 }
 
 function recursivelyBuildAgendaSelect($agendaItems, $depth=0) {
@@ -137,17 +195,40 @@ function recursivelyBuildAgendaSelect($agendaItems, $depth=0) {
 
     foreach($agendaItems as $i) {
         $result .= "<option value='$i[id]'>";
-        $result .= str_repeat('&ndash;', $depth);
+        $result .= str_repeat('&mdash;', $depth);
+        $result .= ($depth > 0) ? ' ' : '';
         $result .= "$i[name]</option>";
-        if(isset($i['subItems']) && count($i['subItems']) > 0) {
-            $result .= recursivelyBuildAgendaSelect($i['subItems'], $depth + 1);
-        }
+        $result .= recursivelyBuildAgendaSelect(loadAgendaItems($i['id']), $depth + 1);
     }
 
-    return [
-        "table" => $result,
-        "agendaItems" => $agendaItems
-    ];
+    return $result;
+}
+
+function recursivelyDuplicateAgenda($bodyUniqueId, $sessionUniqueId, $targetMeetingNum, $destinationMeetingNum, $parentId='[null,-1]', $newParentId='-1') {
+    $targetItems = AgendaItems::read([
+        'bodyUniqueId' => $bodyUniqueId,
+        'sessionUniqueId' => $sessionUniqueId,
+        'meetingNum' => $targetMeetingNum,
+        'parentId' => $parentId,
+        'sort' => 'order,name'
+    ]);
+
+    if(count($targetItems) > 0) {
+        foreach ($targetItems as $i) {
+            $id = $i['id'];
+            unset($i['id']);
+            if(isset($i['meeting'])) unset($i['meeting']);
+            if(isset($i['createdAt'])) unset($i['createdAt']);
+            if(isset($i['updatedAt'])) unset($i['updatedAt']);
+
+            $i['meetingNum'] = intval($destinationMeetingNum);
+            $i['parentId'] = $newParentId;
+            $newItem = AgendaItems::create($i);
+//            echo json_encode($i);
+
+            recursivelyDuplicateAgenda($bodyUniqueId, $sessionUniqueId, $targetMeetingNum, $destinationMeetingNum, $id, $newItem['id']);
+        }
+    }
 }
 ?>
 <!doctype html>
@@ -205,11 +286,7 @@ function recursivelyBuildAgendaSelect($agendaItems, $depth=0) {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php
-                                                $returned = recursivelyBuildAgenda($agendaItems);
-                                                $agendaItems = $returned['agendaItems'];
-                                                echo $returned['table'];
-                                            ?>
+                                            <?=recursivelyBuildAgenda($agendaItems)?>
                                         </tbody>
                                     </table>
                                 </div>
@@ -304,7 +381,7 @@ function recursivelyBuildAgendaSelect($agendaItems, $depth=0) {
                                     <form method="post" action="<?=$_SERVER['REQUEST_URI']?>">
                                         <div class="form-group">
                                             <label for="duplicateMeetingNum">Meeting to Copy</label>
-                                            <select class="form-control" name="meetingNum" id="duplicateMeetingNum">
+                                            <select class="form-control" name="targetMeetingNum" id="duplicateMeetingNum">
                                                 <option selected disabled></option>
                                                 <?php
                                                 $meetings = Meetings::read([
@@ -325,6 +402,7 @@ function recursivelyBuildAgendaSelect($agendaItems, $depth=0) {
                                         </div>
 
                                         <input type="hidden" name="transaction" value="duplicate_agenda">
+                                        <input type="hidden" name="meetingNum" value="<?=$_GET['meetingNum']?>">
                                         <input type="hidden" name="sessionUniqueId" value="<?=$_GET['sessionUniqueId']?>">
                                         <input type="hidden" name="bodyUniqueId" value="<?=$_GET['bodyUniqueId']?>">
                                         <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Duplicate</button>
@@ -348,15 +426,24 @@ function recursivelyBuildAgendaSelect($agendaItems, $depth=0) {
                                         </div>
                                         <div class="form-group">
                                             <label>Insert After <?=$requiredIndicator?></label>
-                                            <select name="parentId" class="form-control">
-                                                <option value="-1" selected>Beginning of Agenda</option>
-                                                <?=recursivelyBuildAgendaSelect($agendaItems)['table']?>
+                                            <select name="previousItem" class="form-control">
+                                                <?=recursivelyBuildAgendaSelect($agendaItems)?>
+                                                <option value="-1" selected>End of Agenda</option>
                                             </select>
                                         </div>
+                                        <div class="form-group">
+                                            <label>Parent Item <?=$requiredIndicator?></label>
+                                            <select name="parentId" class="form-control">
+                                                <option value="-1" selected>(none)</option>
+                                                <?=recursivelyBuildAgendaSelect($agendaItems)?>
+                                            </select>
+                                            <p class="help-block small">Setting a parent item will ignore the "Insert After" value.</p>
+                                        </div>
 
-                                        <input type="hidden" name="transaction" value="create_meeting">
-                                        <input type="hidden" name="sessionUniqueId" value="<?=$_GET['uniqueId']?>">
+                                        <input type="hidden" name="transaction" value="create_agenda_item">
+                                        <input type="hidden" name="sessionUniqueId" value="<?=$_GET['sessionUniqueId']?>">
                                         <input type="hidden" name="bodyUniqueId" value="<?=$_GET['bodyUniqueId']?>">
+                                        <input type="hidden" name="meetingNum" value="<?=$_GET['meetingNum']?>">
                                         <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Add Agenda Item</button>
                                         <div class="clearfix"></div>
                                     </form>
@@ -371,5 +458,6 @@ function recursivelyBuildAgendaSelect($agendaItems, $depth=0) {
     </div>
 </div>
 <?php require_once 'partials/scripts.php' ?>
+<?=buildMessage($result, $_POST)?>
 </body>
 </html>
