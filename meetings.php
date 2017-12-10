@@ -223,5 +223,6 @@ foreach($meetings as $m) {
     </div>
 </div>
 <?php require_once 'partials/scripts.php' ?>
+<?=buildMessage($result, $_POST)?>
 </body>
 </html>

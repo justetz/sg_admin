@@ -19,5 +19,3 @@
 
 <script src="assets/js/markdown.js"></script>
 <script src="assets/js/bootstrap-markdown.js"></script>
-
-i
