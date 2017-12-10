@@ -8,6 +8,8 @@ if (!phpCAS::isAuthenticated()) {
     exit;
 }
 
+blockUnauthorized();
+
 $result = false;
 
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {

@@ -48,42 +48,44 @@
                     <p>My Profile</p>
                 </a>
             </li>
-            <li <?=addActiveClassAppropriatelyMultiple(["/sessions.php", "/body.php", "/session.php", "/subbody.php"])?>>
-                <a href="/sessions.php">
-                    <i class="pe-7s-network"></i>
-                    <p>Bodies &amp; Sessions</p>
-                </a>
-            </li>
-            <li <?=addActiveClassAppropriately("/people.php")?> <?=addActiveClassForPersonPageAppropriately()?>>
-                <a href="/people.php">
-                    <i class="pe-7s-user"></i>
-                    <p>People &amp; Memberships</p>
-                </a>
-            </li>
-            <li <?=addActiveClassAppropriatelyMultiple(["/positions.php", "/position.php"])?>>
-                <a href="/positions.php">
-                    <i class="pe-7s-portfolio"></i>
-                    <p>Positions</p>
-                </a>
-            </li>
-            <li <?=addActiveClassAppropriatelyMultiple(["/meetings.php", "/meeting.php"])?>>
-                <a href="/meetings.php">
-                    <i class="pe-7s-date"></i>
-                    <p>Meetings &amp; Events</p>
-                </a>
-            </li>
-            <li <?=addActiveClassAppropriatelyMultiple(["/actions.php", "/action.php"])?>>
-                <a href="/actions.php">
-                    <i class="pe-7s-hammer"></i>
-                    <p>Actions</p>
-                </a>
-            </li>
-            <li <?=addActiveClassAppropriatelyMultiple(["/projects.php", "/project.php"])?>>
-                <a href="/projects.php">
-                    <i class="pe-7s-note2"></i>
-                    <p>Projects</p>
-                </a>
-            </li>
+            <?php if (IS_AUTHORIZED) { ?>
+                <li <?=addActiveClassAppropriatelyMultiple(["/sessions.php", "/body.php", "/session.php", "/subbody.php"])?>>
+                    <a href="/sessions.php">
+                        <i class="pe-7s-network"></i>
+                        <p>Bodies &amp; Sessions</p>
+                    </a>
+                </li>
+                <li <?=addActiveClassAppropriately("/people.php")?> <?=addActiveClassForPersonPageAppropriately()?>>
+                    <a href="/people.php">
+                        <i class="pe-7s-user"></i>
+                        <p>People &amp; Memberships</p>
+                    </a>
+                </li>
+                <li <?=addActiveClassAppropriatelyMultiple(["/positions.php", "/position.php"])?>>
+                    <a href="/positions.php">
+                        <i class="pe-7s-portfolio"></i>
+                        <p>Positions</p>
+                    </a>
+                </li>
+                <li <?=addActiveClassAppropriatelyMultiple(["/meetings.php", "/meeting.php"])?>>
+                    <a href="/meetings.php">
+                        <i class="pe-7s-date"></i>
+                        <p>Meetings &amp; Events</p>
+                    </a>
+                </li>
+                <li <?=addActiveClassAppropriatelyMultiple(["/actions.php", "/action.php"])?>>
+                    <a href="/actions.php">
+                        <i class="pe-7s-hammer"></i>
+                        <p>Actions</p>
+                    </a>
+                </li>
+                <li <?=addActiveClassAppropriatelyMultiple(["/projects.php", "/project.php"])?>>
+                    <a href="/projects.php">
+                        <i class="pe-7s-note2"></i>
+                        <p>Projects</p>
+                    </a>
+                </li>
+            <?php } ?>
         </ul>
     </div>
 </div>

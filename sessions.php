@@ -8,6 +8,8 @@ if (!phpCAS::isAuthenticated()) {
     exit;
 }
 
+blockUnauthorized();
+
 $pageTitle = "Bodies &amp; Sessions";
 
 function shouldExpandBody ($uniqueId) {

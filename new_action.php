@@ -10,6 +10,8 @@ if (!phpCAS::isAuthenticated()) {
     exit;
 }
 
+blockUnauthorized();
+
 $possibleActionStatuses = ["Pending", "Passed", "Failed", "Postponed", "Tabled", "Moved"];
 
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {

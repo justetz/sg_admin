@@ -8,6 +8,8 @@ if (!phpCAS::isAuthenticated()) {
     exit;
 }
 
+blockUnauthorized();
+
 $pageTitle = "People &amp; Memberships";
 
 $people = json_decode(file_get_contents($API_BASE . "api/people?sort=rcsId"), true);

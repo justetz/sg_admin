@@ -8,6 +8,10 @@ if (!phpCAS::isAuthenticated()) {
     exit;
 }
 
+if (isset($_GET['section']) && $_GET['section'] != 'profile') {
+    blockUnauthorized();
+}
+
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
     $data = $_POST;
     $transaction = $data['transaction'];

@@ -8,6 +8,8 @@ if (!phpCAS::isAuthenticated()) {
     exit;
 }
 
+blockUnauthorized();
+
 $pageTitle = "Meetings &amp; Events";
 $result = false;
 

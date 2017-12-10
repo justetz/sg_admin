@@ -84,7 +84,7 @@ $pageTitle = "Manage Position: $position[name]";
                                         echo "<td>$m[term]</td>";
                                         echo "<td>
                                                     <form class='form-inline' method='post' action='$_SERVER[REQUEST_URI]'>
-                                                        <a href='$_SERVER[REQUEST_URI]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a>
+                                                        <a href='membership.php?id=$m[id]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a>
                                                         
                                                         <input type=\"hidden\" name=\"transaction\" value=\"delete_membership\">
                                                         <input type=\"hidden\" name=\"id\" value=\"$m[id]\">

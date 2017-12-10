@@ -20,7 +20,7 @@ define('IS_AUTHORIZED', $authorized);
 
 function blockUnauthorized() {
     if(!IS_AUTHORIZED) {
-        header('location: ./logout.php');
+        header("location: ./person.php?rcsId=" . strtolower(phpCAS::getUser()) . "&section=profile");
         exit;
     }
 }
