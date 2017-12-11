@@ -19,17 +19,35 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
 
     if($transaction == 'update_biography') {
         $targetPerson = People::getEntry($data['rcsId']);
-        $targetPerson['biography'] = $data['biography'];
+
+        if(isset($data['biography']) && $targetPerson['biography'] != $data['biography'])
+            $targetPerson['biography'] = $data['biography'];
+
         $result = People::update($targetPerson);
     } else if ($transaction == 'update_profile') {
         $targetPerson = People::getEntry($data['rcsId']);
-        $targetPerson['name'] = $data['name'];
-        $targetPerson['email'] = $data['email'];
-        $targetPerson['hometown'] = $data['hometown'];
-        $targetPerson['classYear'] = $data['classYear'];
-        $targetPerson['major'] = $data['major'];
-        $targetPerson['committees'] = $data['committees'];
-        $targetPerson['campusInvolvements'] = $data['campusInvolvements'];
+
+        if(isset($data['name']) && $targetPerson['name'] != $data['name'])
+            $targetPerson['name'] = $data['name'];
+
+        if(isset($data['email']) && $targetPerson['email'] != $data['email'])
+            $targetPerson['email'] = $data['email'];
+
+        if(isset($data['hometown']) && $targetPerson['hometown'] != $data['hometown'])
+            $targetPerson['hometown'] = $data['hometown'];
+
+        if(isset($data['classYear']) && $targetPerson['classYear'] != $data['classYear'])
+            $targetPerson['classYear'] = $data['classYear'];
+
+        if(isset($data['major']) && $targetPerson['major'] != $data['major'])
+            $targetPerson['major'] = $data['major'];
+
+        if(isset($data['committees']) && $targetPerson['committees'] != $data['committees'])
+            $targetPerson['committees'] = $data['committees'];
+
+        if(isset($data['campusInvolvements']) && $targetPerson['campusInvolvements'] != $data['campusInvolvements'])
+            $targetPerson['campusInvolvements'] = $data['campusInvolvements'];
+
         $result = People::update($targetPerson);
     } else if ($transaction == 'create_membership') {
         $result = Memberships::create($data);
@@ -103,24 +121,35 @@ $pageTitle = "Manage Person: $person[name]";
                                 </div>
                             <?php } ?>
                             <?php if(!isset($_GET['section']) || $_GET['section'] == 'profile') { ?>
-                                <div class="card">
-                                    <div class="header">
-                                        <h4 class="title">About</h4>
+                                <?php if(!IS_AUTHORIZED && count($person['memberships']) == 0) { ?>
+                                    <div class="card">
+                                        <div class="header">
+                                            <h4 class="title">Hello!</h4>
+                                        </div>
+                                        <div class="content content-even">
+                                            <p>It appears you are not a member of student government, nor have you been in the past. If you believe this is in error, please contact the Student Government.</p>
+                                        </div>
                                     </div>
-                                    <div class="content content-even">
-                                        <form method="post" action="<?=$_SERVER['REQUEST_URI']?>">
-                                            <div class="form-group">
-                                                <textarea title="Biography" name="biography" id="biography" rows="24" class="form-control" data-provide="markdown"
-                                                          data-iconlibrary="fa"><?=$person["biography"]?></textarea>
-                                            </div>
+                                <?php } else { ?>
+                                    <div class="card">
+                                        <div class="header">
+                                            <h4 class="title">About</h4>
+                                        </div>
+                                        <div class="content content-even">
+                                            <form method="post" action="<?=$_SERVER['REQUEST_URI']?>">
+                                                <div class="form-group">
+                                                    <textarea title="Biography" name="biography" id="biography" rows="24" class="form-control" data-provide="markdown"
+                                                              data-iconlibrary="fa"><?=$person["biography"]?></textarea>
+                                                </div>
 
-                                            <input type="hidden" name="transaction" value="update_biography">
-                                            <input type="hidden" name="rcsId" value="<?=$person['rcsId']?>">
-                                            <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Update About</button>
-                                            <div class="clearfix"></div>
-                                        </form>
+                                                <input type="hidden" name="transaction" value="update_biography">
+                                                <input type="hidden" name="rcsId" value="<?=$person['rcsId']?>">
+                                                <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Update About</button>
+                                                <div class="clearfix"></div>
+                                            </form>
+                                        </div>
                                     </div>
-                                </div>
+                                <?php } ?>
                             <?php } else if(isset($_GET['section']) && $_GET['section'] == 'memberships') { ?>
                                 <div class="card">
                                     <div class="header">
@@ -228,10 +257,10 @@ $pageTitle = "Manage Person: $person[name]";
                             <div class="card">
                                 <div class="content content-even">
                                     <div class="row">
-                                        <div class="col-md-3">
+                                        <div class="col-xs-3">
                                             <img class="img-responsive" src="http://photos.sg.rpi.edu/headshot_<?=$person['rcsId']?>.jpg">
                                         </div>
-                                        <div class="col-md-9">
+                                        <div class="col-xs-9">
                                             <h4 class="title"><?=$person['name']?></h4>
                                             <?php $displayEmail = (isset($person['email']) ? $person['email'] : "$person[rcsId]@rpi.edu"); ?>
                                             <p><a href="mailto:<?=$displayEmail?>"><?=$displayEmail?></a></p>
@@ -248,39 +277,41 @@ $pageTitle = "Manage Person: $person[name]";
                                     <div class="content content-even">
                                         <form method="post" action="<?=$_SERVER['REQUEST_URI']?>">
                                             <div class="form-group">
-                                                <label for="rcsId">RCS ID</label>
-                                                <input type="text" class="form-control" name="rcsId" id="rcsId" value="<?=$person['rcsId']?>" disabled>
+                                                <label for="displayRcsId">RCS ID</label>
+                                                <input type="text" class="form-control" name="displayRcsId" id="displayRcsId" value="<?=$person['rcsId']?>" disabled>
                                             </div>
                                             <div class="form-group">
                                                 <label for="name">Person Name <?=$requiredIndicator?></label>
                                                 <input type="text" class="form-control" name="name" id="name" value="<?=$person['name']?>">
                                             </div>
-                                            <div class="form-group">
-                                                <label for="email">Email <?=$requiredIndicator?></label>
-                                                <input type="text" class="form-control" name="email" id="email" value="<?=$person['email']?>">
-                                                <p class="help-block small">If omitted, your email will be set to your default RPI email.</p>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="hometown">Hometown</label>
-                                                <input type="text" class="form-control" name="hometown" id="hometown" value="<?=$person['hometown']?>">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="classYear">Class Year / Cohort</label>
-                                                <input type="text" class="form-control" name="classYear" id="classYear" value="<?=$person['classYear']?>">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="classYear">Major(s)</label>
-                                                <input type="text" class="form-control" name="major" id="major" value="<?=$person['major']?>">
-                                                <p class="help-block small">Separate multiple majors by semicolon.</p>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="committees">Committees</label>
-                                                <textarea class="form-control" name="committees" id="committees" rows="2"><?=$person['committees']?></textarea>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="campusInvolvements">Campus Involvements</label>
-                                                <textarea class="form-control" name="campusInvolvements" id="campusInvolvements" rows="2"><?=$person['campusInvolvements']?></textarea>
-                                            </div>
+                                            <?php if(IS_AUTHORIZED || count($person['memberships']) > 0) { ?>
+                                                <div class="form-group">
+                                                    <label for="email">Email <?=$requiredIndicator?></label>
+                                                    <input type="text" class="form-control" name="email" id="email" value="<?=$person['email']?>">
+                                                    <p class="help-block small">If omitted, your email will be set to your default RPI email.</p>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="hometown">Hometown</label>
+                                                    <input type="text" class="form-control" name="hometown" id="hometown" value="<?=$person['hometown']?>">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="classYear">Class Year / Cohort</label>
+                                                    <input type="text" class="form-control" name="classYear" id="classYear" value="<?=$person['classYear']?>">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="classYear">Major(s)</label>
+                                                    <input type="text" class="form-control" name="major" id="major" value="<?=$person['major']?>">
+                                                    <p class="help-block small">Separate multiple majors by semicolon.</p>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="committees">Committees</label>
+                                                    <textarea class="form-control" name="committees" id="committees" rows="2"><?=$person['committees']?></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="campusInvolvements">Campus Involvements</label>
+                                                    <textarea class="form-control" name="campusInvolvements" id="campusInvolvements" rows="2"><?=$person['campusInvolvements']?></textarea>
+                                                </div>
+                                            <?php } ?>
 
                                             <input type="hidden" name="transaction" value="update_profile">
                                             <input type="hidden" name="rcsId" value="<?=$person['rcsId']?>">
@@ -310,5 +341,6 @@ $pageTitle = "Manage Person: $person[name]";
         </div>
     </div>
     <?php require_once 'partials/scripts.php' ?>
+    <?=buildMessage($result, $_POST)?>
 </body>
 </html>

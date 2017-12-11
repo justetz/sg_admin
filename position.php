@@ -64,7 +64,7 @@ $pageTitle = "Manage Position: $position[name]";
                             <div class="content table-responsive table-full-width">
                                 <table class="table table-hover table-striped">
                                     <thead>
-                                    <th>Position</th>
+                                    <th>Person</th>
                                     <th>Current</th>
                                     <th>Session</th>
                                     <th>Term</th>

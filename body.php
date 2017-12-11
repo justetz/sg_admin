@@ -16,15 +16,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
 
 
     if ($transaction == 'create_session') {
-        $succeeded = create_session($data);
+        $result = Sessions::create($data);
     } else {
-        $succeeded = false;
-    }
-
-    if (!$succeeded) {
-        $alertsToDisplay .= "Error";
-    } else {
-        $alertsToDisplay .= "Success";
+        $result = false;
     }
 } else if(!isset($_GET['uniqueId'])) {
     header('location: ./sessions.php');
@@ -119,7 +113,7 @@ $pageTitle = "Edit Body: " . $body['name'];
                                     <h4 class="title">Create New Session</h4>
                                 </div>
                                 <div class="content">
-                                    <form>
+                                    <form method="post">
                                         <div class="form-group">
                                             <label>Unique Identifier</label>
                                             <div class="input-group">
@@ -133,10 +127,12 @@ $pageTitle = "Edit Body: " . $body['name'];
                                         </div>
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox" data-toggle="checkbox"> Set as Active Session
+                                                <input type="checkbox" data-toggle="checkbox" name="active"> Set as Active Session
                                             </label>
                                         </div>
 
+                                        <input type="hidden" name="transaction" value="create_session">
+                                        <input type="hidden" name="bodyUniqueId" value="<?=$body['uniqueId']?>">
                                         <button type="submit" class="btn btn-primary btn-sm pull-right">Create Session</button>
                                         <div class="clearfix"></div>
                                     </form>
