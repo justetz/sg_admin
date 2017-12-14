@@ -52,6 +52,8 @@ abstract class APIModel {
 
         $ch = curl_init(static::getUrl() . "/$id");
 
+        //hash (string $algo , string $data) - use this to generate a hashed set of a secret key and the username
+
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
