@@ -1,6 +1,5 @@
 <?php
 require_once 'includes/auth.php';
-require_once 'vendor/justetz/sg_data_php_driver/api.php';
 require_once 'includes/helpers.php';
 
 date_default_timezone_set('America/New_York');
