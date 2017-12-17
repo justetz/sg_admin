@@ -9,6 +9,8 @@ phpCAS::setCasServerCACert("./cacert.pem");
 $authorized = false;
 if(phpCAS::isAuthenticated()) {
     $rcsId = strtolower(phpCAS::getUser());
+    define('RCS_ID', $rcsId);
+
     $authorizedUsers = CmsApi::getAllUsers(32171);
     foreach ($authorizedUsers as $au) {
         if ($au['username'] == $rcsId) {

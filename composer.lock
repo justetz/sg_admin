@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "91f81e1283ac765de3764645642fb586",
+    "content-hash": "b2f46596e07e52ae2fc4d77e4b03dc26",
     "packages": [
         {
             "name": "jasig/phpcas",
@@ -62,20 +62,20 @@
         },
         {
             "name": "justetz/sg_data_php_driver",
-            "version": "1.0.3",
+            "version": "1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/justetz/sg_data_php_driver.git",
-                "reference": "203d8953d3f6a5d7102a702217ff80c5ec97a82a"
+                "reference": "9ffd1bb6fa3fd1936d17d6348146d5abd7a684c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justetz/sg_data_php_driver/zipball/203d8953d3f6a5d7102a702217ff80c5ec97a82a",
-                "reference": "203d8953d3f6a5d7102a702217ff80c5ec97a82a",
+                "url": "https://api.github.com/repos/justetz/sg_data_php_driver/zipball/9ffd1bb6fa3fd1936d17d6348146d5abd7a684c7",
+                "reference": "9ffd1bb6fa3fd1936d17d6348146d5abd7a684c7",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.6.0"
+                "lcobucci/jwt": "^3.2"
             },
             "type": "library",
             "autoload": {
@@ -102,7 +102,7 @@
                 "php",
                 "rpi"
             ],
-            "time": "2017-12-17T19:20:38+00:00"
+            "time": "2017-12-17T21:06:28+00:00"
         },
         {
             "name": "lcobucci/jwt",
@@ -169,8 +169,6 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": {
-        "php": ">=5.6.0"
-    },
+    "platform": [],
     "platform-dev": []
 }
