@@ -1,6 +1,6 @@
 <?php
 
-require_once realpath($_SERVER["DOCUMENT_ROOT"]) . "/CAS-1.3.5/CAS.php";
+require_once realpath($_SERVER["DOCUMENT_ROOT"]) . '/vendor/autoload.php';
 require_once 'cms.php';
 
 phpCAS::client(CAS_VERSION_2_0, 'cas-auth.rpi.edu', 443, '/cas/');

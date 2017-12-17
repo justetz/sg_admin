@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/auth.php';
-require_once 'includes/sg_data_php_driver/api.php';
+require_once 'vendor/justetz/sg_data_php_driver/api.php';
 
 if (!phpCAS::isAuthenticated()) {
     header('location: ./index.php');
