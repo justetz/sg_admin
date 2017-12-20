@@ -68,6 +68,14 @@ $projects = Projects::read([
     "sessionUniqueId" => $_GET['uniqueId'],
 ]);
 
+$currentBylaws = Bylaws::read([
+    "bodyUniqueId" => $_GET['bodyUniqueId'],
+    "sessionUniqueId" => $_GET['uniqueId'],
+    "draft" => false,
+    "sort" => "-date,-updatedAt,-createdAt",
+    "count" => 1
+]);
+
 $pageTitle = "Manage Session: " . $session['name'];
 
 $officersTable = "";
@@ -144,9 +152,11 @@ foreach($memberships as $m) {
                                         <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'meetings') ? 'class="active"' : ''?>>
                                             <a href="<?=toggleGetParam('section','meetings')?>">Meetings</a>
                                         </li>
-
                                         <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'projects') ? 'class="active"' : ''?>>
                                             <a href="<?=toggleGetParam('section','projects')?>">Projects</a>
+                                        </li>
+                                        <li role="presentation" <?=(isset($_GET['section']) && $_GET['section'] == 'bylaws') ? 'class="active"' : ''?>>
+                                            <a href="<?=toggleGetParam('section','bylaws')?>">Bylaws</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -331,6 +341,27 @@ foreach($memberships as $m) {
                                             ?>
                                             </tbody>
                                         </table>
+                                    </div>
+                                </div>
+                            <?php } else if(isset($_GET['section']) && $_GET['section'] == 'bylaws') { ?>
+                                <div class="card">
+                                    <div class="header">
+                                        <h4 class="title">Update the Bylaws of the <?=$session['name']?></h4>
+                                    </div>
+                                    <div class="content content-even">
+                                        <form>
+                                            <div class="form-group">
+                                                <textarea title="Bylaws" name="bylawsText" rows="16" class="form-control"
+                                                          style="resize: vertical;" data-provide="markdown"
+                                                          data-iconlibrary="fa"><?=count($currentBylaws) > 0 ? $currentBylaws[0]['text'] : ''?></textarea>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="date">Effective Date</label>
+                                                <input type="date" name="date" id="date" class="form-control" value="<?=date('Y-m-d')?>">
+                                            </div>
+                                            <button type="submit" class="btn btn-primary btn-sm btn-fill pull-right">Update Bylaws</button>
+                                            <div class="clearfix"></div>
+                                        </form>
                                     </div>
                                 </div>
                             <?php } ?>

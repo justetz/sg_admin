@@ -11,8 +11,13 @@ blockUnauthorized();
 
 $pageTitle = "People &amp; Memberships";
 
-$people = json_decode(file_get_contents($API_BASE . "api/people?sort=rcsId"), true);
-$positions = json_decode(file_get_contents($API_BASE . "api/positions?sort=-presidingOfficer,name"), true);
+$people = People::read([
+    "sort" => "rcsId"
+]);
+
+$positions = Positions::read([
+    "sort" => "-presidingOfficer,name"
+]);
 
 $peopleHeaderRow = '<tr>
         <th width="20%">Name</th>

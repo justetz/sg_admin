@@ -114,7 +114,10 @@ foreach($presidingOfficers as $o) {
                                                         echo "</tr>";
 
                                                         if(shouldExpandBody($s['bodyUniqueId'])) {
-                                                            $subbodies = json_decode(file_get_contents($API_BASE . "api/subbodies?bodyUniqueId=$s[bodyUniqueId]&sessionUniqueId=$s[uniqueId]"), true);
+                                                            $subbodies = Subbodies::read([
+                                                                "bodyUniqueId" => $s['bodyUniqueId'],
+                                                                "sessionUniqueId" => $s['uniqueId']
+                                                            ]);
 
                                                             foreach($subbodies as $sub) {
                                                                 echo "<tr>";

@@ -24,7 +24,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
     exit;
 }
 
-$body = json_decode(file_get_contents($API_BASE . "api/bodies/" . $_GET['uniqueId']), true);
+$body = Bodies::getEntry($_GET['uniqueId']);
 
 $pageTitle = "Edit Body: " . $body['name'];
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b2f46596e07e52ae2fc4d77e4b03dc26",
+    "content-hash": "92b0bf3360d89fade25d05d1fff93d00",
     "packages": [
         {
             "name": "jasig/phpcas",
@@ -62,16 +62,16 @@
         },
         {
             "name": "justetz/sg_data_php_driver",
-            "version": "1.4.1",
+            "version": "1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/justetz/sg_data_php_driver.git",
-                "reference": "9ffd1bb6fa3fd1936d17d6348146d5abd7a684c7"
+                "reference": "d2c66e5f86e3759887279ebec10d3b099d154119"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justetz/sg_data_php_driver/zipball/9ffd1bb6fa3fd1936d17d6348146d5abd7a684c7",
-                "reference": "9ffd1bb6fa3fd1936d17d6348146d5abd7a684c7",
+                "url": "https://api.github.com/repos/justetz/sg_data_php_driver/zipball/d2c66e5f86e3759887279ebec10d3b099d154119",
+                "reference": "d2c66e5f86e3759887279ebec10d3b099d154119",
                 "shasum": ""
             },
             "require": {
@@ -102,7 +102,7 @@
                 "php",
                 "rpi"
             ],
-            "time": "2017-12-17T21:06:28+00:00"
+            "time": "2017-12-20T02:02:29+00:00"
         },
         {
             "name": "lcobucci/jwt",

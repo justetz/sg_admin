@@ -85,6 +85,12 @@
                         <p>Projects</p>
                     </a>
                 </li>
+                <li <?=addActiveClassAppropriatelyMultiple(["/updates.php", "/update.php"])?>>
+                    <a href="/updates.php">
+                        <i class="pe-7s-news-paper"></i>
+                        <p>Updates</p>
+                    </a>
+                </li>
             <?php } ?>
         </ul>
     </div>

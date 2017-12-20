@@ -37,9 +37,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
     header("location: ./session.php?bodyUniqueId=$_GET[bodyUniqueId]&uniqueId=$_GET[sessionUniqueId]");
 }
 
-$subbody = json_decode(file_get_contents($API_BASE . "api/subbodies/$_GET[bodyUniqueId]/$_GET[sessionUniqueId]/$_GET[uniqueId]"), true);
-$memberships = json_decode(file_get_contents($API_BASE . "api/subbody_memberships"), true);
-$meetings = json_decode(file_get_contents($API_BASE . "api/subbody_meetings"), true);
+$subbody = Subbodies::getEntry("$_GET[bodyUniqueId]/$_GET[sessionUniqueId]/$_GET[uniqueId]");
+$memberships = []; //json_decode(file_get_contents($API_BASE . "api/subbody_memberships"), true);
+$meetings = []; //json_decode(file_get_contents($API_BASE . "api/subbody_meetings"), true);
 
 $pageTitle = "Manage Sub-Body: " . $subbody['name'];
 
