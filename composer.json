@@ -1,6 +1,6 @@
 {
     "require": {
-        "jasig/phpcas": "^1.3",
+        "apereo/phpcas": "^1.3",
         "justetz/sg_data_php_driver": "1.5"
     }
 }

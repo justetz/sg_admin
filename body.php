@@ -8,6 +8,18 @@ if (!phpCAS::isAuthenticated()) {
 
 blockUnauthorized();
 
+function markAllSessionsInactive($data) {
+    $prevActiveSessions = Sessions::read([
+        'bodyUniqueId' => $data['bodyUniqueId'],
+        'active' => 'true',
+    ]);
+
+    foreach($prevActiveSessions as $s) {
+        $s['active'] = false;
+        Sessions::update($s);
+    }
+}
+
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
     $data = $_POST;
     $transaction = $data['transaction'];
@@ -15,7 +27,20 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['transaction'])) {
 
 
     if ($transaction == 'create_session') {
+        if (isset($data['active']) && $data['active']) {
+            markAllSessionsInactive($data);
+        }
         $result = Sessions::create($data);
+    } else if ($transaction == 'mark_active') {
+        markAllSessionsInactive($data);
+
+        $session = Sessions::read([
+            'bodyUniqueId' => $data['bodyUniqueId'],
+            'uniqueId' => $data['uniqueId'],
+        ])[0];
+
+        $session['active'] = true;
+        $result = Sessions::update($session);
     } else {
         $result = false;
     }
@@ -89,24 +114,34 @@ $pageTitle = "Edit Body: " . $body['name'];
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php
-                                                foreach($body['sessions'] as $s) {
-                                                    echo "<tr>";
-                                                    echo "<td>$s[name] " . ($s['active'] ? '<span class="text-muted">(Active)</span>' : '') . "</td>";
-                                                    echo "<td><span class='text-muted'>$s[bodyUniqueId]/</span>$s[uniqueId]</td>";
-                                                    echo "<td><div class='btn-group btn-group-xs'>
-                                                        <a class='btn btn-default btn-xs" . ($s["active"] ? " disabled" : "") . "'>Make Active</a>
-                                                        <a href='session.php?bodyUniqueId=$s[bodyUniqueId]&uniqueId=$s[uniqueId]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a>
-                                                        </div></td>";
-                                                    echo "</tr>";
-                                                }
-                                            ?>
+                                            <?php foreach($body['sessions'] as $s) { ?>
+                                                <tr>
+                                                    <td><?=$s['name'] . ($s['active'] ? ' <span class="text-muted">(Active)</span>' : '') ?></td>
+                                                    <td><span class='text-muted'><?=$s['bodyUniqueId']?>/</span><?=$s['uniqueId']?></td>
+                                                    <td>
+                                                        <form class='form-inline' method='post' action='<?=$_SERVER['REQUEST_URI']?>' onsubmit="return confirm('Are you sure you want to mark <?=$s['name']?> as active? The currently-active session will be marked inactive.');">
+                                                            <div class='btn-group btn-group-xs'>
+                                                                <input type="hidden" name="transaction" value="mark_active">
+                                                                <input type="hidden" name="uniqueId" value="<?=$s['uniqueId']?>">
+                                                                <input type="hidden" name="bodyUniqueId" value="<?=$s['bodyUniqueId']?>">
+                                                                <button class="btn btn-default btn-xs <?=$s["active"] ? " disabled" : ""?>" type='submit'>Make Active</button>
+                                                                <a href='session.php?bodyUniqueId=<?=$s["bodyUniqueId"]?>&uniqueId=<?=$s["uniqueId"]?>' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a>
+                                                            </div>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            <?php } ?>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-4">
+                            <div class="card">
+                                <div class="content content-even">
+                                    <a href="/wizard.php?uniqueId=<?=$_GET['uniqueId']?>" class="btn btn-primary btn-fill btn-block btn-borderless">Post-Election Wizard</a>
+                                </div>
+                            </div>
                             <div class="card">
                                 <div class="header">
                                     <h4 class="title">Create New Session</h4>

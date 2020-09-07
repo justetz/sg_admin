@@ -106,8 +106,8 @@ foreach($presidingOfficers as $o) {
                                                     foreach($activeSessions as $s) {
                                                         echo "<tr>";
                                                         echo "<td><a href='" . urlToggleExpand($s['bodyUniqueId']) . "' class='btn btn-default btn-xs'><span class='fa fa-caret-" . (shouldExpandBody($s['bodyUniqueId']) ? "down" : "right") . "'></span></a></td>";
-                                                        echo "<td>$s[name]</td>";
-                                                        echo "<td>" . $s['body']['name'] . "</td>";
+                                                        echo "<td><a href='/session.php?bodyUniqueId=$s[bodyUniqueId]&uniqueId=$s[uniqueId]'>$s[name]</a></td>";
+                                                        echo "<td><a href='/body.php?uniqueId=" . $s['body']['uniqueId'] . "'>" . $s['body']['name'] . "</a></td>";
                                                         echo "<td><a href='/person.php?rcsId=" . $presidingOfficerMap[$s['bodyUniqueId'] . '/' . $s['uniqueId']]['rcsId'] . "'>" . $presidingOfficerMap[$s['bodyUniqueId'] . '/' . $s['uniqueId']]['name'] . "</a></td>";
                                                         echo "<td><span class='text-muted'>$s[bodyUniqueId]/</span>$s[uniqueId]</td>";
                                                         echo "<td><a href='/session.php?bodyUniqueId=$s[bodyUniqueId]&uniqueId=$s[uniqueId]' class='btn btn-primary btn-xs'><span class='fa fa-gear'></span> Manage</a></td>";
@@ -122,8 +122,7 @@ foreach($presidingOfficers as $o) {
                                                             foreach($subbodies as $sub) {
                                                                 echo "<tr>";
                                                                 echo "<td></td>";
-                                                                echo "<td style='padding-left: 30px;' colspan='2'>$sub[name]</td>";
-
+                                                                echo "<td style='padding-left: 30px;' colspan='2'><a href='/subbody.php?bodyUniqueId=$s[bodyUniqueId]&sessionUniqueId=$sub[sessionUniqueId]&uniqueId=$sub[uniqueId]'>$sub[name]</a></td>";
                                                                 echo "<td>";
                                                                 if(isset($sub['presidingOfficerPositionId'])) {
                                                                     if(count($sub['presidingOfficerPosition']['memberships']) == 0) {

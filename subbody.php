@@ -118,7 +118,7 @@ foreach($memberships as $m) {
                                                 <?=$membershipHeaderRow?>
                                             </thead>
                                             <tbody>
-                                                <?php if(isset($subbody['presidingOfficerPositionId'])) { ?>
+                                                <?php if(isset($subbody['presidingOfficerPositionId']) && count($subbody['presidingOfficerPosition']['memberships'])) { ?>
                                                     <?php
                                                     if($subbody['presidingOfficerPosition']['memberships'][0]['person']['email']) {
                                                         $presidingOfficerEmail = $subbody['presidingOfficerPosition']['memberships'][0]['person']['email'];
@@ -134,7 +134,7 @@ foreach($memberships as $m) {
                                                     </tr>
                                                 <?php } ?>
                                                 <?=$membersTable?>
-                                                <?=(!isset($subbody['presidingOfficerPositionId']) && $membershipCount == 0) ? '<td colspan="4" class="text-center"><em class="text-muted">No members are currently active in this session!</em></td>' : ''?>
+                                                <?=((!isset($subbody['presidingOfficerPositionId']) || !count($subbody['presidingOfficerPosition']['memberships'])) && $membershipCount == 0) ? '<td colspan="4" class="text-center"><em class="text-muted">No members are currently active in this session!</em></td>' : ''?>
                                             </tbody>
                                         </table>
                                     </div>

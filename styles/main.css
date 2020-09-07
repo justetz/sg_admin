@@ -2769,7 +2769,7 @@ body > .navbar-collapse[data-color="purple"]:after {
     -ms-overflow-style: -ms-autohiding-scrollbar;
     -webkit-overflow-scrolling: touch; } }
 .home {
-  background-image: url("//cms.union.rpi.edu/static/img/RPIStudentUnion.jpg"); }
+  background-image: url("//cms.union.rpi.edu/static/img/RPIStudentUnion.jpg"); background-size: cover; }
   .home .login-panel {
     margin-top: 30vh;
     width: 500px;

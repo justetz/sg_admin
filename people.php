@@ -12,7 +12,7 @@ blockUnauthorized();
 $pageTitle = "People &amp; Memberships";
 
 $people = People::read([
-    "sort" => "rcsId"
+    "sort" => "rcsId",
 ]);
 
 $positions = Positions::read([
