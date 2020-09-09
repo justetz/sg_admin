@@ -45,8 +45,8 @@ NOTE: Before beginning setup here, you need [sg_data](https://github.com/wtg/sg_
 2. PHP may already be installed on your computer, try running `php -v` to confirm this. If not, [install PHP](https://www.php.net/manual/en/install.macosx.php).
 3. Download [Composer](https://getcomposer.org/), a PHP dependency manager
 4. Navigate to the location of your sg_admin repository in Terminal
-    - Verify that [Composer](https://getcomposer.org/) is installed by typing `composer -v`
-5. Once inside the project directory, install the proper packages for Composer by running `composer install`
+    - Verify that [Composer](https://getcomposer.org/) is installed by typing `composer -v` (or `php composer.phar -v`)
+5. Once inside the project directory, install the proper packages for Composer by running `composer install` (or `php composer.phar install`)
 6. Run `php -S localhost:####` where `####` is a port (i.e. 3000 or 8080) to run the app on. (NOTE: this port needs to be different than the port used for sg_data or sg_public).
 7. Navigate to `localhost:####` in your browser and verify that the Admin site is up.
 8. If you have not already setup [sg_public](https://github.com/justetz/sg_public), make sure follow that process as well.
